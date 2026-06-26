@@ -33,6 +33,10 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 
 .growthChart{display:flex;align-items:end;gap:8px;height:180px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 4px 0;margin-top:12px;overflow:auto}.growthBar{min-width:34px;flex:1;background:linear-gradient(180deg,var(--brand),var(--brand2));border-radius:10px 10px 0 0;position:relative;min-height:4px}.growthBar small{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}.toothGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}.toothBtn{border:1px solid var(--line);background:#fff;border-radius:16px;padding:10px;text-align:left;font-weight:900;color:var(--muted)}.toothBtn.done{background:var(--soft);color:var(--brand2);border-color:rgba(93,167,144,.35)}.toothBtn span{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-top:4px}.historyResult{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px;display:grid;gap:8px}.historyResult mark,.productStatText mark{background:var(--yellow);border-radius:6px;padding:0 2px}.devList{display:grid;gap:10px}.devItem{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px}.healthBadge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:12px;font-weight:900;background:#eef1ef;color:var(--muted);width:max-content}.healthBadge.red{background:#ffe2df;color:#9b3a34}.healthBadge.blue{background:var(--blue);color:#42609a}@media(max-width:760px){.toothGrid{grid-template-columns:repeat(2,1fr)}.devItem{display:grid}.growthChart{height:150px}}
 
+
+.todayCard,.quickActionCard,.goalMiniCard,.whatIfBox,.documentCard,.reportBox{background:#fff;border:1px solid var(--line);border-radius:22px;padding:14px;box-shadow:0 8px 22px rgba(38,73,63,.05)}
+.todayGrid,.quickActionsGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:13px 0}.todayCard span,.quickActionCard span,.goalMiniCard span{display:block;color:var(--muted);font-size:12px;font-weight:900}.todayCard b,.goalMiniCard b{display:block;font-size:20px;margin-top:5px;letter-spacing:-.03em}.quickActionCard{border:0;text-align:left;cursor:pointer;color:var(--text)}.quickActionCard b{display:block;font-size:24px;margin-bottom:6px}.goalCards,.documentCards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.goalMiniCard.active{outline:3px solid rgba(93,167,144,.24)}.goalMiniHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.goalMiniTitle{font-size:20px;font-weight:950;letter-spacing:-.03em}.forecastLine{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:10px 0}.forecastLine:last-child{border-bottom:0}.whatIfResult{margin-top:12px;background:var(--soft);border-radius:18px;padding:13px;color:var(--brand2);font-weight:900}.documentCard .docType{display:inline-flex;border-radius:999px;background:var(--blue);color:#42609a;padding:5px 8px;font-size:12px;font-weight:900}.documentCard.expiring{border-color:#f0c1bd;background:#fff7f6}.documentCard.expiring .docType{background:#ffe2df;color:#9b3a34}.savingsReportGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.reportStat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px}.reportStat span{display:block;color:var(--muted);font-size:12px;font-weight:900}.reportStat b{display:block;font-size:20px;margin-top:5px}.vaccineList{display:grid;gap:10px}.vaccineItem{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;justify-content:space-between;gap:12px}.homeSectionTitle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 10px}.homeSectionTitle h3{margin:0}@media(max-width:760px){.todayGrid,.quickActionsGrid,.goalCards,.documentCards,.savingsReportGrid{grid-template-columns:1fr}.vaccineItem{display:grid}}
+
 @media(max-width:760px){body{padding-bottom:78px}.app{width:min(100% - 16px,980px);padding-top:8px}.hero{grid-template-columns:1fr}.userBox{text-align:left}.trackerGrid,.twoCol,.formGrid{grid-template-columns:1fr}.span2{grid-column:auto}.stats{grid-template-columns:repeat(2,1fr)}.listGrid{grid-template-columns:1fr}.sectionHead{flex-direction:column}.hero h1{font-size:30px}.moneyBig{font-size:30px}.tabs{top:4px}}
 
 
@@ -82,7 +86,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
         <div>
           <p class="eyebrow">Личный семейный сайт</p>
           <h1>Mark Tracker</h1>
-          <p class="sub">Выбери трекер на главной странице: прикорм Марка или накопления.</p><p class="muted small">Версия: Dashboard v5</p>
+          <p class="sub">Выбери трекер на главной странице: прикорм Марка или накопления.</p><p class="muted small">Версия: MyBase v7</p>
         </div>
         <div class="userBox">
           <span class="muted" id="userEmail">—</span>
@@ -131,14 +135,22 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
         <nav class="tabs" id="savingsTabs">
           <button class="tab active" data-panel="savings-home">Главная</button>
           <button class="tab" data-panel="savings-add">Пополнения</button>
+          <button class="tab" data-panel="savings-goals">Цели</button>
+          <button class="tab" data-panel="savings-whatif">Что если</button>
           <button class="tab" data-panel="savings-stats">Статистика</button>
           <button class="tab" data-panel="savings-currencies">Валюты</button>
+          <button class="tab" data-panel="savings-report">Отчёт</button>
+          <button class="tab" data-panel="savings-documents">Документы</button>
           <button class="tab" data-panel="savings-settings">Настройки</button>
         </nav>
         <div class="panel active" id="savings-home"></div>
         <div class="panel" id="savings-add"></div>
+        <div class="panel" id="savings-goals"></div>
+        <div class="panel" id="savings-whatif"></div>
         <div class="panel" id="savings-stats"></div>
         <div class="panel" id="savings-currencies"></div>
+        <div class="panel" id="savings-report"></div>
+        <div class="panel" id="savings-documents"></div>
         <div class="panel" id="savings-settings"></div>
       </section>
 
@@ -5491,6 +5503,8 @@ function normalizeFeedingExtras(){
   if(!feeding.development.teeth || typeof feeding.development.teeth!=="object" || Array.isArray(feeding.development.teeth)) feeding.development.teeth={};
   if(!Array.isArray(feeding.development.illnesses)) feeding.development.illnesses=[];
   if(!Array.isArray(feeding.familyEvents)) feeding.familyEvents=[];
+  if(!Array.isArray(feeding.documents)) feeding.documents=[];
+  if(!Array.isArray(feeding.vaccines)) feeding.vaccines=[];
 }
 function productEntries(product){
   if(!product) return [];
@@ -5723,6 +5737,14 @@ function bindAuth(){
 function bindNavigation(){
   $$(".trackerCard").forEach(b => b.addEventListener("click", () => { activeTracker=b.dataset.tracker; renderAll(); }));
   document.addEventListener("click", (e)=>{
+    const quick=e.target.closest("[data-quick-go]"); if(quick){
+      const id=quick.dataset.quickGo;
+      if(id.startsWith("feeding")){ activeTracker="feeding"; feedingPanel=id; }
+      else if(id.startsWith("savings")){ activeTracker="savings"; savingsPanel=id; }
+      else if(id.startsWith("family")){ activeTracker="family"; familyPanel=id; }
+      renderAll();
+      return;
+    }
     const tab=e.target.closest(".tab"); if(tab){
       const id=tab.dataset.panel;
       if(id?.startsWith("feeding")) feedingPanel=id;
@@ -5758,7 +5780,7 @@ function renderBottomNav(){
   const items = activeTracker === "feeding" ? [
     ["feeding","feeding-home","🥣","Главная"],["feeding","feeding-products","🍎","Продукты"],["feeding","feeding-entry","➕","Ввод"],["feeding","feeding-calendar","📅","Календарь"],["family","family-calendar","🗓️","Семья"],["savings","savings-home","🏦","Накопления"]
   ] : activeTracker === "savings" ? [
-    ["savings","savings-home","⌂","Главная"],["savings","savings-add","⊕","Пополнения"],["savings","savings-stats","▥","Статистика"],["savings","savings-currencies","$","Валюты"],["savings","savings-settings","⚙️","Настройки"],["family","family-calendar","🗓️","Семья"]
+    ["savings","savings-home","⌂","Главная"],["savings","savings-add","⊕","Пополнения"],["savings","savings-goals","🎯","Цели"],["savings","savings-whatif","🧮","Что если"],["savings","savings-report","📄","Отчёт"],["family","family-calendar","🗓️","Семья"]
   ] : [
     ["family","family-home","⌂","Главная"],["family","family-calendar","🗓️","Календарь"],["family","family-backups","📄","PDF/Резерв"],["feeding","feeding-home","🥣","Прикорм"],["savings","savings-home","🏦","Накопления"]
   ];
@@ -5951,8 +5973,14 @@ function bindPdfBackupTools(){
 function homeOverviewHtml(st){
   const d=babyDashboardStats();
   const growth=d.growth;
+  const lastProduct=[...(feeding.entries||[])].sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")) || n(b.number)-n(a.number))[0];
+  const nextEvent=upcomingEvents(1)[0];
   return `<div class="sectionHead"><div><p class="eyebrow">MyBase</p><h2>Главная страница семьи</h2></div><span class="badge">${esc(today())}</span></div>
     <div class="homeHeroGrid"><div class="childHeroCard"><p class="eyebrow">Марк</p><h2>${esc(feeding.child?.name||"Марк")} • ${esc(babyAgeLabel(today()))}</h2><p class="muted">Последняя дата прикорма: ${esc(st.latest)}. Все важные данные собраны на одной странице.</p><div class="childFacts"><div class="childFact"><span>Вес</span><b>${growth?.weight?esc(growth.weight)+" кг":"—"}</b></div><div class="childFact"><span>Рост</span><b>${growth?.height?esc(growth.height)+" см":"—"}</b></div><div class="childFact"><span>Зубы</span><b>${teethCount()}</b></div><div class="childFact"><span>День прикорма</span><b>${latestPlanDay()}</b></div></div></div>${smartAssistantHtml()}</div>
+    <div class="homeSectionTitle"><h3>📌 Карточка сегодня</h3><span class="badge">быстрый обзор</span></div>
+    <div class="todayGrid"><div class="todayCard"><span>Возраст</span><b>${esc(babyAgeLabel(today()))}</b></div><div class="todayCard"><span>Прикорм</span><b>День ${latestPlanDay()}</b></div><div class="todayCard"><span>Последний продукт</span><b>${esc(lastProduct?.product||"—")}</b></div><div class="todayCard"><span>Ближайшее событие</span><b>${nextEvent?esc(nextEvent.title||eventTypeLabel(nextEvent.type)):"—"}</b></div></div>
+    <div class="homeSectionTitle"><h3>⚡ Быстрые кнопки</h3></div>
+    <div class="quickActionsGrid"><button class="quickActionCard" data-quick-go="feeding-entry"><b>➕</b><span>Добавить прикорм</span></button><button class="quickActionCard" data-quick-go="feeding-development"><b>📏</b><span>Рост / вес</span></button><button class="quickActionCard" data-quick-go="feeding-development"><b>🦷</b><span>Отметить зуб</span></button><button class="quickActionCard" data-quick-go="family-calendar"><b>📅</b><span>Семейное событие</span></button><button class="quickActionCard" data-quick-go="savings-add"><b>🏦</b><span>Пополнение</span></button><button class="quickActionCard" data-quick-go="savings-goals"><b>🎯</b><span>Цели</span></button><button class="quickActionCard" data-quick-go="savings-report"><b>📄</b><span>Отчёт за месяц</span></button><button class="quickActionCard" data-quick-go="savings-documents"><b>🗂️</b><span>Документы</span></button></div>
     ${dashboardPanelHtml()}
     <div class="homeTools"><div class="miniChartCard"><h3>📈 Вес и рост</h3>${lineSvg(pointsForGrowth("weight"),"weight","Вес","кг")}${lineSvg(pointsForGrowth("height"),"height","Рост","см")}</div><div class="whoCard"><h3>🌍 График ВОЗ</h3>${whoChartHtml("weight")}</div></div>
     <div class="twoCol"><div class="card"><h3>🦷 Зубы в виде схемы</h3>${toothSchemaHtml()}</div><div class="card"><h3>🤒 Болезни</h3>${illnessesHomeHtml()}</div></div>
@@ -6412,9 +6440,32 @@ function normalizeSavings(){
   savings.rates = {...deep(DEFAULT_SAVINGS.rates), ...(savings.rates||{})};
   savings.activeCurrencies = savings.activeCurrencies?.length ? savings.activeCurrencies : deep(DEFAULT_SAVINGS.activeCurrencies);
   savings.transactions = Array.isArray(savings.transactions) ? savings.transactions : [];
+  if(!Array.isArray(savings.goals) || !savings.goals.length){
+    savings.goals=[{id:"goal_main", ...deep(savings.goal)}];
+    savings.activeGoalId="goal_main";
+  }
+  savings.goals=savings.goals.map((g,i)=>({id:g.id||("goal_"+(i+1)), name:g.name||"Цель", amount:n(g.amount), currency:g.currency||savings.goal.currency||"UAH", startDate:g.startDate||savings.goal.startDate, endDate:g.endDate||savings.goal.endDate, note:g.note||""}));
+  if(!savings.activeGoalId || !savings.goals.some(g=>g.id===savings.activeGoalId)) savings.activeGoalId=savings.goals[0].id;
+  const active=savings.goals.find(g=>g.id===savings.activeGoalId) || savings.goals[0];
+  savings.goal={name:active.name,amount:n(active.amount),currency:active.currency,startDate:active.startDate,endDate:active.endDate};
+  if(!Array.isArray(savings.documents)) savings.documents=[];
   if(!savings.activeCurrencies.includes(savings.goal.currency)) savings.activeCurrencies.unshift(savings.goal.currency);
   savings.rates[savings.goal.currency] = savings.rates[savings.goal.currency] || 1;
 }
+
+function activeGoal(){ normalizeSavings(); return savings.goals.find(g=>g.id===savings.activeGoalId) || savings.goals[0]; }
+function activeGoalId(){ return savings.activeGoalId || (savings.goals?.[0]?.id) || "goal_main"; }
+function transactionsForGoal(goalId=activeGoalId()){
+  const first=savings.goals?.[0]?.id || "goal_main";
+  return (savings.transactions||[]).filter(t => t.goalId ? t.goalId===goalId : goalId===first);
+}
+function updateActiveGoalFromLegacy(){
+  const id=activeGoalId();
+  const i=(savings.goals||[]).findIndex(g=>g.id===id);
+  if(i>=0) savings.goals[i]={...savings.goals[i],...savings.goal,id};
+}
+function goalTotal(goal){ return transactionsForGoal(goal.id).reduce((sum,t)=>sum+txBase(t),0); }
+function goalPct(goal){ return n(goal.amount)?Math.min(100,Math.max(0,goalTotal(goal)/n(goal.amount)*100)):0; }
 function currentRate(currency){ return n(savings.rates?.[currency] ?? (currency===savings.goal.currency ? 1 : 1)); }
 function txBase(t){
   // Все пополнения пересчитываются по текущему курсу из вкладки «Валюты».
@@ -6427,8 +6478,8 @@ function planEquivalentHtml(amount){
   if(!extras.length) return "";
   return `<small class="muted planEquiv">${extras.map(c=>`≈ ${fmtMoney(fromBase(amount,c),c)}`).join(" • ")}</small>`;
 }
-function savingsTotal(){ normalizeSavings(); return savings.transactions.reduce((s,t)=>s+txBase(t),0); }
-function savingsByMonth(){ const map={}; savings.transactions.forEach(t=>{const k=monthKey(t.date); if(!k) return; map[k]=(map[k]||0)+txBase(t);}); return map; }
+function savingsTotal(){ normalizeSavings(); return transactionsForGoal().reduce((s,t)=>s+txBase(t),0); }
+function savingsByMonth(goalId=activeGoalId()){ const map={}; transactionsForGoal(goalId).forEach(t=>{const k=monthKey(t.date); if(!k) return; map[k]=(map[k]||0)+txBase(t);}); return map; }
 function monthsBetween(start,end){ if(!start||!end) return 72; const a=new Date(start+"T00:00:00"), b=new Date(end+"T00:00:00"); return Math.max(1,(b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth()) + 1); }
 function yearsBetween(start,end){ return Math.max(1, Math.ceil(monthsBetween(start,end)/12)); }
 function addMonths(date, months){ const d=new Date(date+"T00:00:00"); d.setMonth(d.getMonth()+months); return d; }
@@ -6443,7 +6494,7 @@ function yearRows(){
   const p=savingsPlan(); const rows=[]; const start=savings.goal.startDate || "2026-04-01";
   for(let i=0;i<p.totalYears;i++){
     const from=addMonths(start, i*12); const to=addMonths(start, i*12+12);
-    const fact=savings.transactions.reduce((sum,t)=>{ const d=new Date((t.date||"")+"T00:00:00"); return d>=from && d<to ? sum+txBase(t) : sum; },0);
+    const fact=transactionsForGoal().reduce((sum,t)=>{ const d=new Date((t.date||"")+"T00:00:00"); return d>=from && d<to ? sum+txBase(t) : sum; },0);
     rows.push({label:`Год ${i+1}`, fact, plan:p.yearPlan, deviation:fact-p.yearPlan});
   }
   return rows;
@@ -6459,7 +6510,7 @@ function savingsSummary(){
   const passed=Math.max(1, Math.min(plan.totalMonths, (now.getFullYear()-start.getFullYear())*12 + (now.getMonth()-start.getMonth()) + 1));
   const plannedToNow=plan.monthPlan*passed;
   const deviation=total-plannedToNow;
-  const last=savings.transactions.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+  const last=transactionsForGoal().slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
   return {total,goal,left,pct,filledMonths,leftMonths,avg,bestMonth:bestEntry?`${bestEntry[0]} • ${fmtMoney(bestEntry[1])}`:"—",forecast,deviation,lastTopup:last?`${fmtDate(last.date)} • ${fmtMoney(txBase(last))}`:"—",status:deviation>=0?"По плану":"Ниже плана",plan};
 }
 
@@ -6507,12 +6558,13 @@ function renderFamilyBackups(){
 
 function renderSavings(){
   normalizeSavings();
-  renderSavingsHome(); renderSavingsAdd(); renderSavingsStats(); renderSavingsCurrencies(); renderSavingsSettings();
+  renderSavingsHome(); renderSavingsAdd(); renderSavingsGoals(); renderSavingsWhatIf(); renderSavingsStats(); renderSavingsCurrencies(); renderSavingsReport(); renderSavingsDocuments(); renderSavingsSettings();
 }
 function renderSavingsHome(){
-  const st=savingsSummary(); const rows=yearRows();
+  const st=savingsSummary(); const rows=yearRows(); const goals=savings.goals||[];
   $("#savings-home").innerHTML = `
-    <div class="sectionHead"><div><p class="eyebrow">Трекер накоплений</p><h2>Главная сводка</h2></div><span class="badge">${esc(savings.goal.currency)}</span></div>
+    <div class="sectionHead"><div><p class="eyebrow">Трекер накоплений</p><h2>Главная сводка</h2></div><span class="badge">Активная цель: ${esc(savings.goal.name)} • ${esc(savings.goal.currency)}</span></div>
+    <div class="card"><h3>🎯 Все цели</h3><div class="goalCards">${goals.map(g=>{const total=goalTotal(g), pct=goalPct(g); return `<div class="goalMiniCard ${g.id===activeGoalId()?"active":""}"><div class="goalMiniHead"><div><div class="goalMiniTitle">${esc(g.name)}</div><span>${fmtMoney(total,g.currency)} из ${fmtMoney(g.amount,g.currency)}</span></div><button class="btn" data-active-goal="${esc(g.id)}">Открыть</button></div><div class="progress" style="margin-top:12px"><i style="width:${pct}%"></i></div><span>${pct.toFixed(1)}% • до ${esc(fmtDate(g.endDate))}</span></div>`}).join("")}</div></div>
     <div class="savingsGoal">
       <div class="goalLine"><div><div class="goalTitle">Цель: ${esc(savings.goal.name)}</div><div class="goalAmount">${fmtMoney(st.goal)}</div></div></div>
       <div class="savedLine"><div><div class="moneyBig">${fmtMoney(st.total)}</div><p class="muted">Накоплено • ${st.pct.toFixed(1)}%</p></div><div class="leftBox">Осталось:<b>${fmtMoney(st.left)}</b></div></div>
@@ -6528,6 +6580,7 @@ function renderSavingsHome(){
     ${yearTableHtml(rows)}
     ${yearBarsHtml(rows)}
   `;
+  $$('[data-active-goal]').forEach(btn=>btn.onclick=async()=>{savings.activeGoalId=btn.dataset.activeGoal; normalizeSavings(); await saveSavings(); renderAll();});
 }
 function savingsStatsCardHtml(st){
   return `<div class="card statsList"><h3>Статистика</h3>
@@ -6550,18 +6603,18 @@ function yearBarsHtml(rows){
 }
 function txHtml(t,i){ const base=txBase(t); const sign=t.type==="expense"?"−":"+"; const rate=currentRate(t.currency); return `<div class="txCard ${t.type==='expense'?'expense':''}"><div><div class="amount">${currencyInfo(t.currency).flag} ${sign}${fmtMoney(t.amount,t.currency)}</div><div class="muted small">${fmtDate(t.date)} • ${esc(t.note||"")}</div><div class="muted small">Текущий курс: ${esc(rate)} ${esc(savings.goal.currency)} за 1 ${esc(t.currency)}</div></div><div class="base">${sign}${fmtMoney(Math.abs(base))}<br><span class="muted small">по текущему курсу</span>${i!==undefined?`<br><button class="btn small" data-del-tx="${i}">Удалить</button>`:""}</div></div>`; }
 function renderSavingsAdd(){
-  $("#savings-add").innerHTML = `<div class="sectionHead"><div><p class="eyebrow">Пополнения</p><h2>Добавить запись</h2></div></div><form class="card" id="txForm"><div class="formGrid"><label>Тип<select name="type"><option value="income">Пополнение</option><option value="expense">Расход</option></select></label><label>Сумма<input name="amount" type="number" inputmode="decimal" required></label><label>Валюта<select name="currency">${savings.activeCurrencies.map(c=>currencyOptionHtml(c)).join("")}</select></label><label>Текущий курс к ${esc(savings.goal.currency)}<input name="rate" type="number" step="0.000001" value="1"></label><label>Дата<input name="date" type="date" value="${today()}"></label><label>Комментарий<input name="note" placeholder="Зарплата, бонус, обмен"></label></div><p class="muted small">Курс здесь обновит текущий курс валюты и пересчитает все старые записи этой валюты.</p><button class="btn btnPrimary" type="submit">Сохранить</button></form><div class="card"><h3>Быстрое добавление</h3><div class="row"><button class="btn" data-fast="10000">+10 000</button><button class="btn" data-fast="50000">+50 000</button><button class="btn" data-fast="100000">+100 000</button><button class="btn" data-fast="500000">+500 000</button></div></div><div class="card"><h3>История пополнений</h3><div class="historyCards">${savings.transactions.map((t,i)=>txHtml(t,i)).join("")||"<p class='muted'>Нет записей</p>"}</div></div>`;
+  $("#savings-add").innerHTML = `<div class="sectionHead"><div><p class="eyebrow">Пополнения</p><h2>Добавить запись</h2></div></div><form class="card" id="txForm"><div class="formGrid"><label>Цель<select name="goalId">${(savings.goals||[]).map(g=>`<option value="${esc(g.id)}" ${g.id===activeGoalId()?"selected":""}>${esc(g.name)}</option>`).join("")}</select></label><label>Тип<select name="type"><option value="income">Пополнение</option><option value="expense">Расход</option></select></label><label>Сумма<input name="amount" type="number" inputmode="decimal" required></label><label>Валюта<select name="currency">${savings.activeCurrencies.map(c=>currencyOptionHtml(c)).join("")}</select></label><label>Текущий курс к ${esc(savings.goal.currency)}<input name="rate" type="number" step="0.000001" value="1"></label><label>Дата<input name="date" type="date" value="${today()}"></label><label>Комментарий<input name="note" placeholder="Зарплата, бонус, обмен"></label></div><p class="muted small">Курс здесь обновит текущий курс валюты и пересчитает все старые записи этой валюты.</p><button class="btn btnPrimary" type="submit">Сохранить</button></form><div class="card"><h3>Быстрое добавление</h3><div class="row"><button class="btn" data-fast="10000">+10 000</button><button class="btn" data-fast="50000">+50 000</button><button class="btn" data-fast="100000">+100 000</button><button class="btn" data-fast="500000">+500 000</button></div></div><div class="card"><h3>История пополнений</h3><div class="historyCards">${savings.transactions.map((t,i)=>txHtml(t,i)).join("")||"<p class='muted'>Нет записей</p>"}</div></div>`;
   const form=$("#txForm"); form.currency.onchange=()=>{form.rate.value=savings.rates[form.currency.value]||1;}; form.currency.onchange();
-  form.onsubmit=async e=>{e.preventDefault(); const fd=new FormData(form); savings.transactions.unshift({id:"t"+Date.now(),type:fd.get("type"),amount:n(fd.get("amount")),currency:fd.get("currency"),rateAtAdd:n(fd.get("rate")),date:fd.get("date"),note:fd.get("note")}); savings.rates[fd.get("currency")]=n(fd.get("rate")); await saveSavings(); toast("Запись сохранена"); renderAll(); };
+  form.onsubmit=async e=>{e.preventDefault(); const fd=new FormData(form); savings.transactions.unshift({id:"t"+Date.now(),goalId:fd.get("goalId")||activeGoalId(),type:fd.get("type"),amount:n(fd.get("amount")),currency:fd.get("currency"),rateAtAdd:n(fd.get("rate")),date:fd.get("date"),note:fd.get("note")}); savings.rates[fd.get("currency")]=n(fd.get("rate")); await saveSavings(); toast("Запись сохранена"); renderAll(); };
   $$('[data-fast]').forEach(b=>b.onclick=()=>{form.amount.value=b.dataset.fast;});
   $$('[data-del-tx]').forEach(b=>b.onclick=async()=>{const i=n(b.dataset.delTx); if(confirm("Удалить запись?")){savings.transactions.splice(i,1); await saveSavings(); renderAll();}});
 }
 function renderSavingsStats(){
-  const st=savingsSummary(); const rows=yearRows(); const byMonth=Object.entries(savingsByMonth()).sort(); const max=Math.max(1,...byMonth.map(([,v])=>Math.abs(v))); const biggest=savings.transactions.slice().sort((a,b)=>Math.abs(txBase(b))-Math.abs(txBase(a)))[0];
+  const st=savingsSummary(); const rows=yearRows(); const byMonth=Object.entries(savingsByMonth()).sort(); const max=Math.max(1,...byMonth.map(([,v])=>Math.abs(v))); const activeTx=transactionsForGoal(); const biggest=activeTx.slice().sort((a,b)=>Math.abs(txBase(b))-Math.abs(txBase(a)))[0];
   $("#savings-stats").innerHTML = `<div class="sectionHead"><div><p class="eyebrow">Подробная информация</p><h2>Статистика накоплений</h2></div></div>
     ${savingsStatsCardHtml(st)}
     <div class="card"><h3>Динамика по месяцам</h3><div class="barChart">${byMonth.map(([m,v])=>`<div class="bar" style="height:${Math.max(4,Math.abs(v)/max*100)}%"><small>${esc(m.slice(5))}</small></div>`).join("") || "<p class='muted'>Нет данных</p>"}</div></div>
-    <div class="stats"><div class="stat"><b>${savings.transactions.length}</b><span>всего записей</span></div><div class="stat"><b>${biggest?fmtMoney(Math.abs(txBase(biggest))):fmtMoney(0)}</b><span>самое крупное</span></div><div class="stat"><b>${fmtMoney(st.plan.monthPlan)}</b><span>план в месяц</span>${planEquivalentHtml(st.plan.monthPlan)}</div><div class="stat"><b>${fmtMoney(st.plan.yearPlan)}</b><span>план в год</span>${planEquivalentHtml(st.plan.yearPlan)}</div></div>
+    <div class="stats"><div class="stat"><b>${activeTx.length}</b><span>записей активной цели</span></div><div class="stat"><b>${biggest?fmtMoney(Math.abs(txBase(biggest))):fmtMoney(0)}</b><span>самое крупное</span></div><div class="stat"><b>${fmtMoney(st.plan.monthPlan)}</b><span>план в месяц</span>${planEquivalentHtml(st.plan.monthPlan)}</div><div class="stat"><b>${fmtMoney(st.plan.yearPlan)}</b><span>план в год</span>${planEquivalentHtml(st.plan.yearPlan)}</div></div>
     ${yearTableHtml(rows)}${yearBarsHtml(rows)}`;
 }
 function renderSavingsCurrencies(){
@@ -6584,9 +6637,43 @@ function renderSavingsCurrencies(){
   const add=$("#addCurrencyBtn"); if(add) add.onclick=async()=>{const val=$("#addCurrencySelect")?.value; if(val && !savings.activeCurrencies.includes(val)){savings.activeCurrencies.push(val); savings.rates[val]=val===savings.goal.currency?1:(savings.rates[val]||1); await saveSavings(); toast("Валюта добавлена"); renderAll();}};
   $("#saveCurrencyRates").onclick=async()=>{$$('[data-rate]').forEach(i=>savings.rates[i.dataset.rate]=i.dataset.rate===savings.goal.currency?1:n(i.value)); await saveSavings(); toast("Курсы сохранены, суммы пересчитаны"); renderAll();};
 }
+
+function renderSavingsGoals(){
+  normalizeSavings();
+  $("#savings-goals").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Цели</p><h2>Несколько целей накоплений</h2></div><span class="badge">${(savings.goals||[]).length} целей</span></div>
+  <div class="goalCards">${(savings.goals||[]).map(g=>{const total=goalTotal(g), pct=goalPct(g); return `<div class="goalMiniCard ${g.id===activeGoalId()?"active":""}"><div class="goalMiniHead"><div><div class="goalMiniTitle">${esc(g.name)}</div><span>${fmtMoney(total,g.currency)} / ${fmtMoney(g.amount,g.currency)}</span></div><button class="btn" data-active-goal="${esc(g.id)}">Сделать активной</button></div><div class="progress" style="margin:12px 0"><i style="width:${pct}%"></i></div><span>${pct.toFixed(1)}% • ${esc(fmtDate(g.startDate))} — ${esc(fmtDate(g.endDate))}</span><div class="row" style="margin-top:12px"><button class="btn btnDanger" data-del-goal="${esc(g.id)}">Удалить</button></div></div>`}).join("")}</div>
+  <form class="card" id="goalAddForm"><h3>Добавить новую цель</h3><div class="formGrid"><label>Название<input name="name" required placeholder="Авто, отпуск, резерв"></label><label>Сумма<input name="amount" type="number" required></label><label>Валюта<select name="currency">${allCurrencyOptionsHtml(savings.goal.currency)}</select></label><label>Дата начала<input name="startDate" type="date" value="${today()}"></label><label>Дата окончания<input name="endDate" type="date"></label><label class="span2">Заметка<input name="note" placeholder="Для чего эта цель"></label></div><button class="btn btnPrimary" type="submit">Добавить цель</button></form>`;
+  $$('[data-active-goal]').forEach(btn=>btn.onclick=async()=>{savings.activeGoalId=btn.dataset.activeGoal; normalizeSavings(); await saveSavings(); renderAll();});
+  $$('[data-del-goal]').forEach(btn=>btn.onclick=async()=>{if((savings.goals||[]).length<=1) return toast("Нельзя удалить последнюю цель"); if(!confirm("Удалить цель? Пополнения этой цели останутся в общей истории, но не будут видны в цели.")) return; savings.goals=savings.goals.filter(g=>g.id!==btn.dataset.delGoal); if(savings.activeGoalId===btn.dataset.delGoal) savings.activeGoalId=savings.goals[0].id; normalizeSavings(); await saveSavings(); renderAll();});
+  $("#goalAddForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const g={id:"goal"+Date.now(),name:(fd.get("name")||"").trim(),amount:n(fd.get("amount")),currency:fd.get("currency"),startDate:fd.get("startDate")||today(),endDate:fd.get("endDate")||"",note:(fd.get("note")||"").trim()}; savings.goals.push(g); savings.activeGoalId=g.id; normalizeSavings(); await saveSavings(); toast("Цель добавлена"); renderAll();};
+}
+function renderSavingsWhatIf(){
+  const st=savingsSummary();
+  $("#savings-whatif").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Калькулятор</p><h2>Что если</h2></div><span class="badge">${esc(savings.goal.name)}</span></div>
+  <form class="card" id="whatIfForm"><div class="formGrid"><label>Откладывать в месяц<input name="monthly" type="number" value="${Math.round(st.avg||st.plan.monthPlan||0)}"></label><label>Разовое пополнение<input name="extra" type="number" value="0"></label><label>Валюта расчёта<select name="currency">${savings.activeCurrencies.map(c=>currencyOptionHtml(c,savings.goal.currency)).join("")}</select></label><label>Сколько месяцев считать<input name="months" type="number" value="12"></label></div><button class="btn btnPrimary" type="submit">Посчитать</button><div id="whatIfResult" class="whatIfResult">Введите значения и нажмите «Посчитать».</div></form>
+  <div class="card"><h3>Прогноз достижения цели</h3><div class="forecastLine"><span>Осталось</span><b>${fmtMoney(st.left)}</b></div><div class="forecastLine"><span>Текущий средний темп</span><b>${fmtMoney(st.avg)}/мес.</b></div><div class="forecastLine"><span>Прогноз</span><b>${esc(st.forecast)}</b></div></div>`;
+  $("#whatIfForm").onsubmit=e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const cur=fd.get("currency"); const monthly=n(fd.get("monthly"))*currentRate(cur); const extra=n(fd.get("extra"))*currentRate(cur); const months=n(fd.get("months")); const after=savingsTotal()+extra+monthly*months; const left=Math.max(0,n(savings.goal.amount)-after); const finish=monthly>0?Math.ceil(left/monthly):0; $("#whatIfResult").innerHTML=`Через ${months} мес. будет примерно <b>${fmtMoney(after)}</b>. Останется <b>${fmtMoney(left)}</b>. При таком темпе после этого нужно ещё примерно <b>${finish}</b> мес.`;};
+}
+function renderSavingsReport(){
+  const month=monthKey(today());
+  const render=(m)=>{const tx=transactionsForGoal().filter(t=>monthKey(t.date)===m); const income=tx.filter(t=>t.type!=="expense").reduce((a,t)=>a+txBase(t),0); const expense=Math.abs(tx.filter(t=>t.type==="expense").reduce((a,t)=>a+txBase(t),0)); return `<div class="savingsReportGrid"><div class="reportStat"><span>Пополнения</span><b>${fmtMoney(income)}</b></div><div class="reportStat"><span>Расходы</span><b>${fmtMoney(expense)}</b></div><div class="reportStat"><span>Итог месяца</span><b>${fmtMoney(income-expense)}</b></div></div><div class="card"><h3>Записи месяца</h3><div class="historyCards">${tx.map((t)=>txHtml(t)).join("")||"<p class='muted'>Нет записей за месяц</p>"}</div></div>`};
+  $("#savings-report").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Отчёт</p><h2>Отчёт за месяц</h2></div></div><div class="card"><div class="monthPickerLine"><label>Месяц<input id="savingsReportMonth" type="month" value="${esc(month)}"></label><button class="btn btnPrimary" id="printSavingsReport" type="button">Сохранить как PDF</button></div></div><div id="savingsReportContent">${render(month)}</div>`;
+  $("#savingsReportMonth").oninput=e=>{$("#savingsReportContent").innerHTML=render(e.target.value)};
+  $("#printSavingsReport").onclick=()=>window.print();
+}
+function renderSavingsDocuments(){
+  normalizeFeedingExtras();
+  const docs=feeding.documents||[];
+  $("#savings-documents").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Документы</p><h2>Семейные документы</h2></div><span class="badge">${docs.length} записей</span></div>
+  <form class="card" id="docForm"><div class="formGrid"><label>Тип<select name="type"><option>Паспорт</option><option>Свидетельство</option><option>Карта проживания</option><option>Медицина</option><option>Договор</option><option>Другое</option></select></label><label>Название<input name="title" required placeholder="Паспорт Марка"></label><label>Дата выдачи<input name="issueDate" type="date"></label><label>Действует до<input name="expireDate" type="date"></label><label class="span2">Заметка<textarea name="note" placeholder="Где хранится, номер, что нужно сделать"></textarea></label></div><button class="btn btnPrimary" type="submit">Добавить документ</button></form>
+  <div class="documentCards">${docs.map(d=>{const days=d.expireDate?Math.ceil((new Date(d.expireDate)-new Date())/86400000):9999; return `<div class="documentCard ${days<=60?"expiring":""}"><span class="docType">${esc(d.type||"Документ")}</span><h3 style="margin-top:8px">${esc(d.title||"Документ")}</h3><p class="muted small">Выдан: ${esc(fmtDate(d.issueDate))} • До: ${esc(fmtDate(d.expireDate))}</p>${days<=60?`<span class="badge red">Срок скоро: ${days} дн.</span>`:""}<p class="muted small">${esc(d.note||"")}</p><button class="btn btnDanger" data-del-doc="${esc(d.id)}">Удалить</button></div>`}).join("")||"<p class='muted'>Документов пока нет</p>"}</div>`;
+  $("#docForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); feeding.documents.push({id:"doc"+Date.now(),type:fd.get("type"),title:(fd.get("title")||"").trim(),issueDate:fd.get("issueDate"),expireDate:fd.get("expireDate"),note:(fd.get("note")||"").trim()}); await saveFeeding(); toast("Документ добавлен"); renderAll();};
+  $$('[data-del-doc]').forEach(btn=>btn.onclick=async()=>{if(!confirm("Удалить документ?")) return; feeding.documents=feeding.documents.filter(d=>d.id!==btn.dataset.delDoc); await saveFeeding(); renderAll();});
+}
+
 function renderSavingsSettings(){
-  $("#savings-settings").innerHTML = `<div class="sectionHead"><div><p class="eyebrow">Настройки</p><h2>Цель и данные</h2></div></div><form class="card" id="goalForm"><div class="formGrid"><label>Название цели<input name="name" value="${esc(savings.goal.name)}"></label><label>Сумма цели<input name="amount" type="number" value="${esc(savings.goal.amount)}"></label><label>Валюта цели<select name="currency">${allCurrencyOptionsHtml(savings.goal.currency)}</select></label><label>Дата начала<input name="startDate" type="date" value="${esc(savings.goal.startDate||"")}"></label><label>Дата окончания<input name="endDate" type="date" value="${esc(savings.goal.endDate||"")}"></label></div><button class="btn btnPrimary" type="submit">Сохранить цель</button></form><div class="card"><h3>Резервная копия</h3><div class="row"><button class="btn btnPrimary" id="downloadSavings">Скачать JSON</button><label class="btn">Импорт JSON<input id="importSavings" type="file" accept="application/json" style="display:none"></label><button class="btn btnDanger" id="resetSavingsDemo">Вернуть данные из оригинала</button></div><p class="muted small">Кнопка сброса вернёт цель и стартовые пополнения из исходного трекера.</p></div>`;
-  $("#goalForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); savings.goal={name:fd.get("name"),amount:n(fd.get("amount")),currency:fd.get("currency"),startDate:fd.get("startDate"),endDate:fd.get("endDate")}; if(!savings.activeCurrencies.includes(savings.goal.currency)) savings.activeCurrencies.unshift(savings.goal.currency); savings.rates[savings.goal.currency]=1; await saveSavings(); toast("Цель сохранена"); renderAll();};
+  $("#savings-settings").innerHTML = `<div class="sectionHead"><div><p class="eyebrow">Настройки</p><h2>Активная цель и безопасность</h2></div></div><form class="card" id="goalForm"><div class="formGrid"><label>Название цели<input name="name" value="${esc(savings.goal.name)}"></label><label>Сумма цели<input name="amount" type="number" value="${esc(savings.goal.amount)}"></label><label>Валюта цели<select name="currency">${allCurrencyOptionsHtml(savings.goal.currency)}</select></label><label>Дата начала<input name="startDate" type="date" value="${esc(savings.goal.startDate||"")}"></label><label>Дата окончания<input name="endDate" type="date" value="${esc(savings.goal.endDate||"")}"></label></div><button class="btn btnPrimary" type="submit">Сохранить цель</button></form><div class="card"><h3>Резервная копия</h3><div class="row"><button class="btn btnPrimary" id="downloadSavings">Скачать JSON</button><label class="btn">Импорт JSON<input id="importSavings" type="file" accept="application/json" style="display:none"></label><button class="btn btnDanger" id="resetSavingsDemo">Вернуть данные из оригинала</button></div><p class="muted small">Кнопка сброса вернёт цель и стартовые пополнения из исходного трекера.</p></div>`;
+  $("#goalForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); savings.goal={name:fd.get("name"),amount:n(fd.get("amount")),currency:fd.get("currency"),startDate:fd.get("startDate"),endDate:fd.get("endDate")}; updateActiveGoalFromLegacy(); if(!savings.activeCurrencies.includes(savings.goal.currency)) savings.activeCurrencies.unshift(savings.goal.currency); savings.rates[savings.goal.currency]=1; await saveSavings(); toast("Цель сохранена"); renderAll();};
   $("#downloadSavings").onclick=()=>downloadJson("savings-backup.json", savings);
   $("#importSavings").onchange=e=>importJson(e, async data=>{savings=data; normalizeSavings(); await saveSavings(); renderAll(); toast("Импортировано");});
   $("#resetSavingsDemo").onclick=async()=>{ if(confirm("Вернуть данные накоплений из оригинального трекера?")){ savings=deep(DEFAULT_SAVINGS); await saveSavings(); renderAll(); toast("Данные восстановлены"); } };
