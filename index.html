@@ -55,6 +55,22 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 .familyEventList{display:grid;gap:10px}.familyEvent{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.familyEventIcon{font-size:26px}.eventTypeBadge{display:inline-flex;border-radius:999px;background:var(--blue);color:#42609a;padding:5px 8px;font-size:12px;font-weight:900}.eventTypeBadge.health{background:#ffe2df;color:#9b3a34}.eventTypeBadge.docs{background:var(--yellow);color:#8a6118}.eventTypeBadge.family{background:var(--soft);color:var(--brand2)}.familyCalendarDay{min-height:96px}.familyEventDots{display:flex;gap:4px;flex-wrap:wrap}.eventDot{width:8px;height:8px;border-radius:50%;background:var(--brand2)}.eventDot.health{background:var(--red)}.eventDot.docs{background:#d69f2b}.eventDot.family{background:var(--green)}
 @media(max-width:760px){.trackerGrid{grid-template-columns:1fr}.homeHeroGrid,.homeTools,.pdfBackupGrid{grid-template-columns:1fr}.childFacts,.dashboardPanel{grid-template-columns:repeat(2,1fr)}.monthPickerLine{grid-template-columns:1fr}.familyEvent{display:grid}.childHeroCard h2{font-size:26px}.toothSchemaInner{min-width:460px}}
 
+/* MyBase v9 polish */
+.trackerCard,.quickActionCard,.dashboardTile,.todayCard,.childFact,.goalMiniCard,.documentCard,.familyEvent,.txCard{transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease}
+.trackerCard:active,.quickActionCard:active,.bottomBtn:active{transform:scale(.98)}
+.trackerIcon,.quickActionCard b,.bottomBtn b{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(93,167,144,.18),rgba(255,216,191,.55));box-shadow:inset 0 0 0 1px rgba(255,255,255,.65)}
+.bottomBtn b{width:34px;height:34px;margin:0 auto 3px;font-size:19px}.bottomBtn.active b{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+.quickActionCard{background:linear-gradient(135deg,#fff,#f0faf6);border:1px solid rgba(93,167,144,.18);border-radius:22px;padding:15px;box-shadow:0 8px 22px rgba(38,73,63,.06)}
+.card,.product,.entryCard,.goalMiniCard,.documentCard,.dashboardTile,.todayCard,.childFact{border-color:rgba(93,167,144,.14)}
+.dashboardTile:nth-child(4n+1),.todayCard:nth-child(4n+1),.childFact:nth-child(4n+1){background:linear-gradient(135deg,#fff,#eef9f4)}
+.dashboardTile:nth-child(4n+2),.todayCard:nth-child(4n+2),.childFact:nth-child(4n+2){background:linear-gradient(135deg,#fff,#fff6ec)}
+.dashboardTile:nth-child(4n+3),.todayCard:nth-child(4n+3),.childFact:nth-child(4n+3){background:linear-gradient(135deg,#fff,#eef3ff)}
+.dashboardTile:nth-child(4n+4),.todayCard:nth-child(4n+4),.childFact:nth-child(4n+4){background:linear-gradient(135deg,#fff,#f6f1ff)}
+.sectionBackBar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 12px;padding:10px 12px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid var(--line);box-shadow:0 8px 18px rgba(38,73,63,.05)}
+.sectionBackBtn{border:0;border-radius:999px;padding:9px 12px;background:var(--soft);color:var(--brand2);font-weight:950}.sectionBackBar span{font-size:12px;color:var(--muted);font-weight:900}
+.emptyState{background:linear-gradient(135deg,#fff,#f7fbf9);border:1px dashed rgba(93,167,144,.35);border-radius:22px;padding:18px;text-align:center;color:var(--muted);display:grid;place-items:center;gap:6px}.emptyStateIcon{font-size:34px}.emptyState b{color:var(--text);font-size:17px}.emptyState p{margin:0;font-size:13px;line-height:1.35}
+.btnDanger{box-shadow:0 8px 18px rgba(216,93,85,.12)}
+
   </style>
 </head>
 <body>
@@ -5468,6 +5484,14 @@ const monthNames = ["янв.","фев.","мар.","апр.","мая","июн.","
 
 function toast(text){ const el=$("#toast"); el.textContent=text; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"),2400); }
 function esc(v){ return String(v ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
+function emptyState(icon="📭", title="Пока нет записей", text="Добавь первую запись, и она появится здесь."){
+  return `<div class="emptyState"><div class="emptyStateIcon">${esc(icon)}</div><b>${esc(title)}</b><p>${esc(text)}</p></div>`;
+}
+function confirmDanger(title, text="Это действие нельзя отменить."){
+  return confirm(`⚠️ ${title}
+
+${text}`);
+}
 function n(v){ return Number(v)||0; }
 function today(){ return new Date().toISOString().slice(0,10); }
 function fmtMoney(v, c=savings.goal.currency){ return (Math.round(n(v)*100)/100).toLocaleString("ru-RU",{maximumFractionDigits:2}) + " " + (currencySymbols[c]||c); }
@@ -5752,6 +5776,14 @@ function bindNavigation(){
     renderAll();
   }));
   document.addEventListener("click", (e)=>{
+    const back=e.target.closest("[data-back-panel]"); if(back){
+      const id=back.dataset.backPanel;
+      if(id.startsWith("feeding")){ activeTracker="feeding"; feedingPanel=id; }
+      else if(id.startsWith("savings")){ activeTracker="savings"; savingsPanel=id; }
+      else if(id.startsWith("family")){ activeTracker="family"; familyPanel=id; }
+      renderAll();
+      return;
+    }
     const quick=e.target.closest("[data-quick-go]"); if(quick){
       const id=quick.dataset.quickGo;
       if(id.startsWith("feeding")){ activeTracker="feeding"; feedingPanel=id; }
@@ -5779,9 +5811,28 @@ function bindNavigation(){
   });
 }
 
+function homePanelFor(containerId){
+  if(containerId==="#feedingTracker") return "feeding-home";
+  if(containerId==="#savingsTracker") return "savings-home";
+  return "family-home";
+}
+function homeLabelFor(containerId){
+  if(containerId==="#feedingTracker") return "к обзору Марка";
+  if(containerId==="#savingsTracker") return "к обзору накоплений";
+  return "к семейному обзору";
+}
+function ensureBackButton(containerId, activeId){
+  const home=homePanelFor(containerId);
+  const panel=$("#"+activeId);
+  if(!panel || activeId===home) return;
+  const old=panel.querySelector(".sectionBackBar");
+  if(old) old.remove();
+  panel.insertAdjacentHTML("afterbegin", `<div class="sectionBackBar"><button class="sectionBackBtn" type="button" data-back-panel="${home}">← Назад</button><span>${esc(homeLabelFor(containerId))}</span></div>`);
+}
 function setPanel(containerId, activeId){
   $$(".panel", $(containerId)).forEach(p => p.classList.toggle("active", p.id === activeId));
   $$(".tab", $(containerId)).forEach(t => t.classList.toggle("active", t.dataset.panel === activeId));
+  ensureBackButton(containerId, activeId);
 }
 function panelForTracker(tr){
   if(tr==="feeding") return feedingPanel;
@@ -6032,7 +6083,7 @@ function homeQuickActionsHtml(){
 }
 function homeEventsMiniHtml(){
   const events=upcomingEvents(3);
-  return `<div class="card"><div class="sectionHead" style="margin:0 0 10px"><div><p class="eyebrow">Календарь</p><h3>Ближайшие события</h3></div><button class="btn" type="button" data-quick-go="family-calendar">Открыть</button></div><div class="familyEventList">${events.map(eventCardHtml).join("") || `<p class="muted">Пока нет будущих событий.</p>`}</div></div>`;
+  return `<div class="card"><div class="sectionHead" style="margin:0 0 10px"><div><p class="eyebrow">Календарь</p><h3>Ближайшие события</h3></div><button class="btn" type="button" data-quick-go="family-calendar">Открыть</button></div><div class="familyEventList">${events.map(eventCardHtml).join("") || emptyState("📅","Пока нет будущих событий","Добавь врача, прививку, документы или напоминание в семейный календарь.")}</div></div>`;
 }
 function homeMarkMiniHtml(){
   const g=latestGrowth();
@@ -6077,7 +6128,7 @@ function categoryProgressHtml(){
 }
 function latestEntriesHtml(){
   const latest=[...feeding.entries].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,6);
-  return latest.map(e=>`<div class="miniItem"><div><b>${esc(e.product)}</b><br><span class="muted small">${esc(e.date)}${e.planDay?" • день "+esc(e.planDay):""}${e.meal?" • "+esc(e.meal):""} • ${esc(e.portion||"")}</span></div><span class="badge ${e.reaction && e.reaction!=="Нет реакции"?"red":""}">${esc(e.reaction||"—")}</span></div>`).join("") || "<p class='muted'>Записей пока нет</p>";
+  return latest.map(e=>`<div class="miniItem"><div><b>${esc(e.product)}</b><br><span class="muted small">${esc(e.date)}${e.planDay?" • день "+esc(e.planDay):""}${e.meal?" • "+esc(e.meal):""} • ${esc(e.portion||"")}</span></div><span class="badge ${e.reaction && e.reaction!=="Нет реакции"?"red":""}">${esc(e.reaction||"—")}</span></div>`).join("") || emptyState("🥣","Записей пока нет","Добавь первый приём пищи во вкладке «Ввод».");
 }
 function renderFeedingProducts(){
   $("#feeding-products").innerHTML = `
@@ -6095,7 +6146,7 @@ function renderFeedingProducts(){
       const used=(feeding.entries||[]).some(e=>String(e.product||"")===String(p.name||"") && (!e.category || !p.category || String(e.category)===String(p.category)));
       const src=p.source||"";
       return `<div class="product"><div><h3>${highlightText(p.name,q)}</h3><p class="muted small">${esc(p.category)}</p></div><span class="badge ${p.allergen?"warn":""}">${p.allergen?"Аллерген: "+esc(p.allergenType):"Обычный"}</span><span class="badge ${isIntroduced(p)?"":"red"}">${isIntroduced(p)?"Введён":"Не введён"}</span><p class="muted small">${esc(p.note||"")}</p><div class="productActions"><button class="btn" type="button" data-product-intro="${esc(p.id||"")}">Отметить введён</button><button class="btn btnDanger" type="button" data-product-delete="${esc(p.id||"")}" data-used="${used?"1":"0"}">Удалить</button></div>${src?`<span class="muted small">Источник: ${esc(src)}</span>`:""}</div>`;
-    }).join("") || "<p class='muted'>Ничего не найдено</p>";
+    }).join("") || emptyState("🔍","Ничего не найдено","Попробуй изменить поиск или фильтр.");
     $$('[data-product-intro]').forEach(btn=>btn.onclick=async()=>{
       const p=(feeding.products||[]).find(x=>String(x.id||"")===String(btn.dataset.productIntro));
       if(!p) return; p.status="Введён"; await saveFeeding(); toast(`${p.name} отмечен как введён`); renderAll();
@@ -6329,7 +6380,7 @@ function renderFeedingEntry(){
       const reactionBad=e.reaction && e.reaction!=="Нет реакции";
       const note=[e.stool?"Стул: "+e.stool:"",e.skin?"Кожа: "+e.skin:"",e.sleepMood?"Сон/настроение: "+e.sleepMood:"",e.reactionDescription?"Реакция: "+e.reactionDescription:"",e.notes?e.notes:""] .filter(Boolean).join(" • ");
       return `<div class="entryCard"><div class="entryCardTop"><div><h3>${esc(e.product||"")}</h3><div class="entryMeta">${esc(e.date||"")} ${e.planDay?"• день "+esc(e.planDay):""} ${e.age||e.ageMonths?"• "+esc(e.age || (e.ageMonths+" месяцев")):""} ${e.meal?"• "+esc(e.meal):""}<br>${esc(e.category||"")}</div></div><div class="entryActions"><span class="badge ${entryStatusBadgeClass(e.status)}">${esc(e.status||"—")}</span><button class="editEntryBtn" type="button" data-entry-edit-id="${esc(e.id||"")}">Редактировать</button><button class="deleteEntryBtn" type="button" data-entry-id="${esc(e.id||"")}">Удалить</button></div></div><div class="entryBadges"><span class="badge gray">Возраст: ${esc(e.age || (e.ageMonths ? e.ageMonths+" месяцев" : "—"))}</span><span class="badge blue">Приём: ${esc(e.meal||"—")}</span><span class="badge gray">Порция: ${esc(e.portion||"—")}</span><span class="badge ${reactionBad?"red":"green"}">${esc(e.reaction||"—")}</span></div>${note?`<div class="entryNote">${esc(note)}</div>`:""}</div>`;
-    }).join("") || "<p class='muted'>Записей пока нет</p>";
+    }).join("") || emptyState("🥣","Записей пока нет","Добавь первый приём пищи во вкладке «Ввод».");
     document.querySelectorAll(".editEntryBtn").forEach(btn=>{
       btn.onclick=()=>{ editingFeedingEntryId=btn.dataset.entryEditId; renderFeedingEntry(); setTimeout(()=>document.getElementById("entryForm")?.scrollIntoView({behavior:"smooth",block:"start"}),50); };
     });
@@ -6460,16 +6511,16 @@ function renderFeedingDevelopment(){
   const teeth=feeding.development.teeth||{};
   const illnesses=[...(feeding.development.illnesses||[])].sort((a,b)=>String(b.startDate||"").localeCompare(String(a.startDate||"")));
   $("#feeding-development").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Развитие малыша</p><h2>Рост, вес, зубы и болезни</h2></div><span class="badge">Возраст сейчас: ${esc(babyAgeLabel(today()))}</span></div>
-  <div class="twoCol"><form class="card" id="growthForm"><h3>Рост и вес</h3><div class="formGrid"><label>Дата<input name="date" type="date" value="${today()}" required></label><label>Вес, кг<input name="weight" type="number" step="0.01" placeholder="9.3"></label><label>Рост, см<input name="height" type="number" step="0.1" placeholder="72"></label><label>Заметка<input name="note" placeholder="Плановый осмотр"></label></div><button class="btn btnPrimary" type="submit">Сохранить измерение</button></form><div class="card"><h3>Последние измерения</h3><div class="devList">${growth.slice(0,6).map((g,i)=>`<div class="devItem"><div><b>${esc(fmtDate(g.date))}</b><br><span class="muted small">${g.weight?`Вес: ${esc(g.weight)} кг`:""} ${g.height?` • Рост: ${esc(g.height)} см`:""}${g.note?`<br>${esc(g.note)}`:""}</span></div><button class="btn btnDanger" data-del-growth="${esc(g.id||growth.indexOf(g))}">Удалить</button></div>`).join("") || `<p class="muted">Пока нет измерений</p>`}</div></div></div>
+  <div class="twoCol"><form class="card" id="growthForm"><h3>Рост и вес</h3><div class="formGrid"><label>Дата<input name="date" type="date" value="${today()}" required></label><label>Вес, кг<input name="weight" type="number" step="0.01" placeholder="9.3"></label><label>Рост, см<input name="height" type="number" step="0.1" placeholder="72"></label><label>Заметка<input name="note" placeholder="Плановый осмотр"></label></div><button class="btn btnPrimary" type="submit">Сохранить измерение</button></form><div class="card"><h3>Последние измерения</h3><div class="devList">${growth.slice(0,6).map((g,i)=>`<div class="devItem"><div><b>${esc(fmtDate(g.date))}</b><br><span class="muted small">${g.weight?`Вес: ${esc(g.weight)} кг`:""} ${g.height?` • Рост: ${esc(g.height)} см`:""}${g.note?`<br>${esc(g.note)}`:""}</span></div><button class="btn btnDanger" data-del-growth="${esc(g.id||growth.indexOf(g))}">Удалить</button></div>`).join("") || emptyState("📏","Пока нет измерений","Добавь рост или вес малыша после следующего осмотра.")}</div></div></div>
   <div class="twoCol"><div class="card"><h3>График веса</h3>${growthChartHtml("weight")}</div><div class="card"><h3>График роста</h3>${growthChartHtml("height")}</div></div>
   <div class="twoCol"><form class="card" id="toothForm"><h3>Зубы</h3><div class="formGrid"><label>Зуб<select name="tooth">${BABY_TEETH.map(t=>`<option>${esc(t)}</option>`).join("")}</select></label><label>Дата появления<input name="date" type="date" value="${today()}" required></label><label class="span2">Заметка<input name="note" placeholder="Например: прорезался вечером"></label></div><button class="btn btnPrimary" type="submit">Отметить зуб</button></form><div class="card"><h3>Схема зубов</h3><p class="muted small">Верхний и нижний ряд расположены как у человека. Зубы, которые уже выросли, подсвечены зелёным. Нажми на подсвеченный зуб, чтобы удалить отметку.</p>${renderToothSchema(teeth,true)}</div></div>
-  <div class="twoCol"><form class="card" id="illnessForm"><h3>Болезни</h3><div class="formGrid"><label>Начало<input name="startDate" type="date" value="${today()}" required></label><label>Конец<input name="endDate" type="date"></label><label>Температура максимум<input name="temperature" type="number" step="0.1" placeholder="37.8"></label><label>Симптомы<input name="symptoms" placeholder="кашель, насморк"></label><label>Лекарства<input name="meds" placeholder="Нурофен, капли"></label><label>Диагноз/врач<input name="diagnosis" placeholder="если есть"></label><label class="span2">Заметки<textarea name="notes"></textarea></label></div><button class="btn btnPrimary" type="submit">Сохранить болезнь</button></form><div class="card"><h3>История болезней</h3><div class="devList">${illnesses.map(x=>`<div class="devItem"><div><b>${esc(fmtDate(x.startDate))}${x.endDate?` — ${esc(fmtDate(x.endDate))}`:""}</b><div class="entryBadges" style="margin-top:8px">${x.temperature?`<span class="healthBadge red">${esc(x.temperature)} °C</span>`:""}${x.symptoms?`<span class="healthBadge blue">${esc(x.symptoms)}</span>`:""}</div><p class="muted small">${[x.meds?"Лекарства: "+x.meds:"",x.diagnosis?"Диагноз: "+x.diagnosis:"",x.notes].filter(Boolean).map(esc).join("<br>")}</p></div><button class="btn btnDanger" data-del-illness="${esc(x.id||"")}">Удалить</button></div>`).join("") || `<p class="muted">Пока нет записей</p>`}</div></div></div>`;
+  <div class="twoCol"><form class="card" id="illnessForm"><h3>Болезни</h3><div class="formGrid"><label>Начало<input name="startDate" type="date" value="${today()}" required></label><label>Конец<input name="endDate" type="date"></label><label>Температура максимум<input name="temperature" type="number" step="0.1" placeholder="37.8"></label><label>Симптомы<input name="symptoms" placeholder="кашель, насморк"></label><label>Лекарства<input name="meds" placeholder="Нурофен, капли"></label><label>Диагноз/врач<input name="diagnosis" placeholder="если есть"></label><label class="span2">Заметки<textarea name="notes"></textarea></label></div><button class="btn btnPrimary" type="submit">Сохранить болезнь</button></form><div class="card"><h3>История болезней</h3><div class="devList">${illnesses.map(x=>`<div class="devItem"><div><b>${esc(fmtDate(x.startDate))}${x.endDate?` — ${esc(fmtDate(x.endDate))}`:""}</b><div class="entryBadges" style="margin-top:8px">${x.temperature?`<span class="healthBadge red">${esc(x.temperature)} °C</span>`:""}${x.symptoms?`<span class="healthBadge blue">${esc(x.symptoms)}</span>`:""}</div><p class="muted small">${[x.meds?"Лекарства: "+x.meds:"",x.diagnosis?"Диагноз: "+x.diagnosis:"",x.notes].filter(Boolean).map(esc).join("<br>")}</p></div><button class="btn btnDanger" data-del-illness="${esc(x.id||"")}">Удалить</button></div>`).join("") || emptyState("📝","Пока нет записей","Добавь первую запись, и она появится здесь.")}</div></div></div>`;
   $("#growthForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const item={id:"g"+Date.now(),date:fd.get("date"),weight:fd.get("weight"),height:fd.get("height"),note:(fd.get("note")||"").trim()}; if(!item.weight && !item.height) return toast("Введи вес или рост"); feeding.development.growth.push(item); await saveFeeding(); toast("Измерение сохранено"); renderAll();};
-  $$('[data-del-growth]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.delGrowth; if(!confirm("Удалить измерение?")) return; feeding.development.growth=feeding.development.growth.filter((x,i)=>String(x.id||i)!==String(id)); await saveFeeding(); renderAll();});
+  $$('[data-del-growth]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.delGrowth; if(!confirmDanger("Удалить измерение?","Эта запись роста/веса будет удалена из истории.")) return; feeding.development.growth=feeding.development.growth.filter((x,i)=>String(x.id||i)!==String(id)); await saveFeeding(); renderAll();});
   $("#toothForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); feeding.development.teeth[fd.get("tooth")]={date:fd.get("date"),note:(fd.get("note")||"").trim()}; await saveFeeding(); toast("Зуб отмечен"); renderAll();};
-  $$('[data-tooth-name]').forEach(btn=>btn.onclick=async()=>{const name=btn.dataset.toothName; const item=feeding.development.teeth[name]; if(!item) return; if(confirm(`Удалить отметку зуба «${name}»?`)){ delete feeding.development.teeth[name]; await saveFeeding(); renderAll(); }});
+  $$('[data-tooth-name]').forEach(btn=>btn.onclick=async()=>{const name=btn.dataset.toothName; const item=feeding.development.teeth[name]; if(!item) return; if(confirmDanger(`Удалить отметку зуба «${name}»?`,"Дата появления зуба будет удалена.")){ delete feeding.development.teeth[name]; await saveFeeding(); renderAll(); }});
   $("#illnessForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const item={id:"ill"+Date.now(),startDate:fd.get("startDate"),endDate:fd.get("endDate"),temperature:fd.get("temperature"),symptoms:(fd.get("symptoms")||"").trim(),meds:(fd.get("meds")||"").trim(),diagnosis:(fd.get("diagnosis")||"").trim(),notes:(fd.get("notes")||"").trim()}; feeding.development.illnesses.push(item); await saveFeeding(); toast("Запись болезни сохранена"); renderAll();};
-  $$('[data-del-illness]').forEach(btn=>btn.onclick=async()=>{if(!confirm("Удалить запись болезни?")) return; const id=btn.dataset.delIllness; feeding.development.illnesses=feeding.development.illnesses.filter(x=>String(x.id)!==String(id)); await saveFeeding(); renderAll();});
+  $$('[data-del-illness]').forEach(btn=>btn.onclick=async()=>{if(!confirmDanger("Удалить запись болезни?","Симптомы, лекарства и заметки будут удалены.")) return; const id=btn.dataset.delIllness; feeding.development.illnesses=feeding.development.illnesses.filter(x=>String(x.id)!==String(id)); await saveFeeding(); renderAll();});
 }
 
 function renderFeedingControl(){
@@ -6601,7 +6652,7 @@ function familyEventsForDate(date){ return eventsList().filter(e=>String(e.date|
 function renderFamilyHome(){
   const events=upcomingEvents(8);
   const g=latestGrowth();
-  $("#family-home").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Семья</p><h2>Обзор календаря</h2></div><button class="btn btnPrimary" id="goFamilyCalendar">Открыть календарь</button></div><div class="homeHeroGrid"><div class="childHeroCard"><p class="eyebrow">Семейный календарь</p><h2>Все важные даты в одном месте</h2><p class="muted">Врачи, документы, прививки, семейные события и напоминания. PDF и резервные копии перенесены в раздел «Ещё».</p><div class="childFacts"><div class="childFact"><span>Событий</span><b>${eventsList().length}</b></div><div class="childFact"><span>Ближайшие</span><b>${events.length}</b></div><div class="childFact"><span>Возраст</span><b>${esc(babyAgeLabel(today()))}</b></div><div class="childFact"><span>Последний вес</span><b>${g?.weight?esc(g.weight)+" кг":"—"}</b></div></div></div>${smartAssistantHtml()}</div><div class="card"><h3>Ближайшие события</h3><div class="familyEventList">${events.map(eventCardHtml).join("") || `<p class="muted">Пока нет будущих событий.</p>`}</div></div>`;
+  $("#family-home").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Семья</p><h2>Обзор календаря</h2></div><button class="btn btnPrimary" id="goFamilyCalendar">Открыть календарь</button></div><div class="homeHeroGrid"><div class="childHeroCard"><p class="eyebrow">Семейный календарь</p><h2>Все важные даты в одном месте</h2><p class="muted">Врачи, документы, прививки, семейные события и напоминания. PDF и резервные копии перенесены в раздел «Ещё».</p><div class="childFacts"><div class="childFact"><span>Событий</span><b>${eventsList().length}</b></div><div class="childFact"><span>Ближайшие</span><b>${events.length}</b></div><div class="childFact"><span>Возраст</span><b>${esc(babyAgeLabel(today()))}</b></div><div class="childFact"><span>Последний вес</span><b>${g?.weight?esc(g.weight)+" кг":"—"}</b></div></div></div>${smartAssistantHtml()}</div><div class="card"><h3>Ближайшие события</h3><div class="familyEventList">${events.map(eventCardHtml).join("") || emptyState("📅","Пока нет будущих событий","Добавь врача, прививку, документы или напоминание в семейный календарь.")}</div></div>`;
   $("#goFamilyCalendar").onclick=()=>{familyPanel="family-calendar"; renderAll();};
 }
 function eventCardHtml(e){ return `<div class="familyEvent"><div class="familyEventIcon">${eventTypeIcon(e.type)}</div><div style="flex:1"><span class="eventTypeBadge ${eventTypeClass(e.type)}">${esc(eventTypeLabel(e.type))}</span><h3 style="margin-top:8px">${esc(e.title||"Событие")}</h3><p class="muted small">${esc(fmtDate(e.date))}${e.time?` • ${esc(e.time)}`:""}</p>${e.note?`<p class="muted small">${esc(e.note)}</p>`:""}</div><button class="btn btnDanger" data-del-family-event="${esc(e.id||"")}">Удалить</button></div>`; }
@@ -6625,7 +6676,7 @@ function renderFamilyCalendar(){
   $("#familyNextMonth").onclick=()=>{familyCalendarMonth=shiftMonth(familyCalendarMonth,1); renderAll();};
   $$('[data-family-date]').forEach(btn=>btn.onclick=()=>{familyCalendarSelectedDate=btn.dataset.familyDate; renderAll();});
   $("#familyEventForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const item={id:"fe"+Date.now(),date:fd.get("date"),time:fd.get("time"),type:fd.get("type"),title:(fd.get("title")||"").trim(),note:(fd.get("note")||"").trim()}; feeding.familyEvents.push(item); familyCalendarSelectedDate=item.date; familyCalendarMonth=monthKey(item.date); await saveFeeding(); toast("Событие добавлено"); renderAll();};
-  $$('[data-del-family-event]').forEach(btn=>btn.onclick=async()=>{ if(!confirm("Удалить событие?")) return; feeding.familyEvents=eventsList().filter(e=>String(e.id)!==String(btn.dataset.delFamilyEvent)); await saveFeeding(); renderAll(); });
+  $$('[data-del-family-event]').forEach(btn=>btn.onclick=async()=>{ if(!confirmDanger("Удалить событие?","Событие исчезнет из семейного календаря.")) return; feeding.familyEvents=eventsList().filter(e=>String(e.id)!==String(btn.dataset.delFamilyEvent)); await saveFeeding(); renderAll(); });
 }
 function renderFamilyBackups(){
   $("#family-backups").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Ещё</p><h2>Отчёты, безопасность и резерв</h2></div></div><div class="card">${pdfBackupToolsHtml()}</div>`;
@@ -6683,13 +6734,13 @@ function renderSavingsAdd(){
   const form=$("#txForm"); form.currency.onchange=()=>{form.rate.value=savings.rates[form.currency.value]||1;}; form.currency.onchange();
   form.onsubmit=async e=>{e.preventDefault(); const fd=new FormData(form); savings.transactions.unshift({id:"t"+Date.now(),goalId:fd.get("goalId")||activeGoalId(),type:fd.get("type"),amount:n(fd.get("amount")),currency:fd.get("currency"),rateAtAdd:n(fd.get("rate")),date:fd.get("date"),note:fd.get("note")}); savings.rates[fd.get("currency")]=n(fd.get("rate")); await saveSavings(); toast("Запись сохранена"); renderAll(); };
   $$('[data-fast]').forEach(b=>b.onclick=()=>{form.amount.value=b.dataset.fast;});
-  $$('[data-del-tx]').forEach(b=>b.onclick=async()=>{const i=n(b.dataset.delTx); if(confirm("Удалить запись?")){savings.transactions.splice(i,1); await saveSavings(); renderAll();}});
+  $$('[data-del-tx]').forEach(b=>b.onclick=async()=>{const i=n(b.dataset.delTx); if(confirmDanger("Удалить запись накопления?","Сумма будет удалена из истории накоплений.")){savings.transactions.splice(i,1); await saveSavings(); renderAll();}});
 }
 function renderSavingsStats(){
   const st=savingsSummary(); const rows=yearRows(); const byMonth=Object.entries(savingsByMonth()).sort(); const max=Math.max(1,...byMonth.map(([,v])=>Math.abs(v))); const activeTx=transactionsForGoal(); const biggest=activeTx.slice().sort((a,b)=>Math.abs(txBase(b))-Math.abs(txBase(a)))[0];
   $("#savings-stats").innerHTML = `<div class="sectionHead"><div><p class="eyebrow">Подробная информация</p><h2>Статистика накоплений</h2></div></div>
     ${savingsStatsCardHtml(st)}
-    <div class="card"><h3>Динамика по месяцам</h3><div class="barChart">${byMonth.map(([m,v])=>`<div class="bar" style="height:${Math.max(4,Math.abs(v)/max*100)}%"><small>${esc(m.slice(5))}</small></div>`).join("") || "<p class='muted'>Нет данных</p>"}</div></div>
+    <div class="card"><h3>Динамика по месяцам</h3><div class="barChart">${byMonth.map(([m,v])=>`<div class="bar" style="height:${Math.max(4,Math.abs(v)/max*100)}%"><small>${esc(m.slice(5))}</small></div>`).join("") || emptyState("📊","Нет данных","Добавь первые данные, чтобы увидеть статистику.")}</div></div>
     <div class="stats"><div class="stat"><b>${activeTx.length}</b><span>записей активной цели</span></div><div class="stat"><b>${biggest?fmtMoney(Math.abs(txBase(biggest))):fmtMoney(0)}</b><span>самое крупное</span></div><div class="stat"><b>${fmtMoney(st.plan.monthPlan)}</b><span>план в месяц</span>${planEquivalentHtml(st.plan.monthPlan)}</div><div class="stat"><b>${fmtMoney(st.plan.yearPlan)}</b><span>план в год</span>${planEquivalentHtml(st.plan.yearPlan)}</div></div>
     ${yearTableHtml(rows)}${yearBarsHtml(rows)}`;
 }
@@ -6720,7 +6771,7 @@ function renderSavingsGoals(){
   <div class="goalCards">${(savings.goals||[]).map(g=>{const total=goalTotal(g), pct=goalPct(g); return `<div class="goalMiniCard ${g.id===activeGoalId()?"active":""}"><div class="goalMiniHead"><div><div class="goalMiniTitle">${esc(g.name)}</div><span>${fmtMoney(total,g.currency)} / ${fmtMoney(g.amount,g.currency)}</span></div><button class="btn" data-active-goal="${esc(g.id)}">Сделать активной</button></div><div class="progress" style="margin:12px 0"><i style="width:${pct}%"></i></div><span>${pct.toFixed(1)}% • ${esc(fmtDate(g.startDate))} — ${esc(fmtDate(g.endDate))}</span><div class="row" style="margin-top:12px"><button class="btn btnDanger" data-del-goal="${esc(g.id)}">Удалить</button></div></div>`}).join("")}</div>
   <form class="card" id="goalAddForm"><h3>Добавить новую цель</h3><div class="formGrid"><label>Название<input name="name" required placeholder="Авто, отпуск, резерв"></label><label>Сумма<input name="amount" type="number" required></label><label>Валюта<select name="currency">${allCurrencyOptionsHtml(savings.goal.currency)}</select></label><label>Дата начала<input name="startDate" type="date" value="${today()}"></label><label>Дата окончания<input name="endDate" type="date"></label><label class="span2">Заметка<input name="note" placeholder="Для чего эта цель"></label></div><button class="btn btnPrimary" type="submit">Добавить цель</button></form>`;
   $$('[data-active-goal]').forEach(btn=>btn.onclick=async()=>{savings.activeGoalId=btn.dataset.activeGoal; normalizeSavings(); await saveSavings(); renderAll();});
-  $$('[data-del-goal]').forEach(btn=>btn.onclick=async()=>{if((savings.goals||[]).length<=1) return toast("Нельзя удалить последнюю цель"); if(!confirm("Удалить цель? Пополнения этой цели останутся в общей истории, но не будут видны в цели.")) return; savings.goals=savings.goals.filter(g=>g.id!==btn.dataset.delGoal); if(savings.activeGoalId===btn.dataset.delGoal) savings.activeGoalId=savings.goals[0].id; normalizeSavings(); await saveSavings(); renderAll();});
+  $$('[data-del-goal]').forEach(btn=>btn.onclick=async()=>{if((savings.goals||[]).length<=1) return toast("Нельзя удалить последнюю цель"); if(!confirmDanger("Удалить цель накоплений?","Пополнения этой цели останутся в общей истории, но не будут видны внутри цели.")) return; savings.goals=savings.goals.filter(g=>g.id!==btn.dataset.delGoal); if(savings.activeGoalId===btn.dataset.delGoal) savings.activeGoalId=savings.goals[0].id; normalizeSavings(); await saveSavings(); renderAll();});
   $("#goalAddForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const g={id:"goal"+Date.now(),name:(fd.get("name")||"").trim(),amount:n(fd.get("amount")),currency:fd.get("currency"),startDate:fd.get("startDate")||today(),endDate:fd.get("endDate")||"",note:(fd.get("note")||"").trim()}; savings.goals.push(g); savings.activeGoalId=g.id; normalizeSavings(); await saveSavings(); toast("Цель добавлена"); renderAll();};
 }
 function renderSavingsWhatIf(){
@@ -6742,9 +6793,9 @@ function renderSavingsDocuments(){
   const docs=feeding.documents||[];
   $("#savings-documents").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Документы</p><h2>Семейные документы</h2></div><span class="badge">${docs.length} записей</span></div>
   <form class="card" id="docForm"><div class="formGrid"><label>Тип<select name="type"><option>Паспорт</option><option>Свидетельство</option><option>Карта проживания</option><option>Медицина</option><option>Договор</option><option>Другое</option></select></label><label>Название<input name="title" required placeholder="Паспорт Марка"></label><label>Дата выдачи<input name="issueDate" type="date"></label><label>Действует до<input name="expireDate" type="date"></label><label class="span2">Заметка<textarea name="note" placeholder="Где хранится, номер, что нужно сделать"></textarea></label></div><button class="btn btnPrimary" type="submit">Добавить документ</button></form>
-  <div class="documentCards">${docs.map(d=>{const days=d.expireDate?Math.ceil((new Date(d.expireDate)-new Date())/86400000):9999; return `<div class="documentCard ${days<=60?"expiring":""}"><span class="docType">${esc(d.type||"Документ")}</span><h3 style="margin-top:8px">${esc(d.title||"Документ")}</h3><p class="muted small">Выдан: ${esc(fmtDate(d.issueDate))} • До: ${esc(fmtDate(d.expireDate))}</p>${days<=60?`<span class="badge red">Срок скоро: ${days} дн.</span>`:""}<p class="muted small">${esc(d.note||"")}</p><button class="btn btnDanger" data-del-doc="${esc(d.id)}">Удалить</button></div>`}).join("")||"<p class='muted'>Документов пока нет</p>"}</div>`;
+  <div class="documentCards">${docs.map(d=>{const days=d.expireDate?Math.ceil((new Date(d.expireDate)-new Date())/86400000):9999; return `<div class="documentCard ${days<=60?"expiring":""}"><span class="docType">${esc(d.type||"Документ")}</span><h3 style="margin-top:8px">${esc(d.title||"Документ")}</h3><p class="muted small">Выдан: ${esc(fmtDate(d.issueDate))} • До: ${esc(fmtDate(d.expireDate))}</p>${days<=60?`<span class="badge red">Срок скоро: ${days} дн.</span>`:""}<p class="muted small">${esc(d.note||"")}</p><button class="btn btnDanger" data-del-doc="${esc(d.id)}">Удалить</button></div>`}).join("")||emptyState("📄","Документов пока нет","Добавь паспорт, карту, свидетельство или медицинский документ.")}</div>`;
   $("#docForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); feeding.documents.push({id:"doc"+Date.now(),type:fd.get("type"),title:(fd.get("title")||"").trim(),issueDate:fd.get("issueDate"),expireDate:fd.get("expireDate"),note:(fd.get("note")||"").trim()}); await saveFeeding(); toast("Документ добавлен"); renderAll();};
-  $$('[data-del-doc]').forEach(btn=>btn.onclick=async()=>{if(!confirm("Удалить документ?")) return; feeding.documents=feeding.documents.filter(d=>d.id!==btn.dataset.delDoc); await saveFeeding(); renderAll();});
+  $$('[data-del-doc]').forEach(btn=>btn.onclick=async()=>{if(!confirmDanger("Удалить документ?","Информация о документе и сроках будет удалена.")) return; feeding.documents=feeding.documents.filter(d=>d.id!==btn.dataset.delDoc); await saveFeeding(); renderAll();});
 }
 
 function renderSavingsSettings(){
@@ -6752,7 +6803,7 @@ function renderSavingsSettings(){
   $("#goalForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); savings.goal={name:fd.get("name"),amount:n(fd.get("amount")),currency:fd.get("currency"),startDate:fd.get("startDate"),endDate:fd.get("endDate")}; updateActiveGoalFromLegacy(); if(!savings.activeCurrencies.includes(savings.goal.currency)) savings.activeCurrencies.unshift(savings.goal.currency); savings.rates[savings.goal.currency]=1; await saveSavings(); toast("Цель сохранена"); renderAll();};
   $("#downloadSavings").onclick=()=>downloadJson("savings-backup.json", savings);
   $("#importSavings").onchange=e=>importJson(e, async data=>{savings=data; normalizeSavings(); await saveSavings(); renderAll(); toast("Импортировано");});
-  $("#resetSavingsDemo").onclick=async()=>{ if(confirm("Вернуть данные накоплений из оригинального трекера?")){ savings=deep(DEFAULT_SAVINGS); await saveSavings(); renderAll(); toast("Данные восстановлены"); } };
+  $("#resetSavingsDemo").onclick=async()=>{ if(confirmDanger("Вернуть данные накоплений из оригинального трекера?","Текущие изменения в накоплениях будут заменены стартовыми данными.")){ savings=deep(DEFAULT_SAVINGS); await saveSavings(); renderAll(); toast("Данные восстановлены"); } };
 }
 function downloadJson(name, data){ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
 function importJson(e, cb){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{try{cb(JSON.parse(r.result));}catch(err){toast("Неверный JSON")}}; r.readAsText(f); }
