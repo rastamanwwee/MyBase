@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>MyBase v10</title>
   <meta name="theme-color" content="#5da790" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MyBase" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
   <style>
 
 :root{
@@ -73,6 +78,8 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 
 .stabilityGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.diagnosticBox{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px}.diagnosticBox.ok{border-color:rgba(47,155,101,.28);background:#f7fff9}.diagnosticBox.warn{border-color:rgba(214,159,43,.32);background:#fffaf0}.diagnosticBox.err{border-color:rgba(216,93,85,.32);background:#fff7f6}.diagList{display:grid;gap:8px;margin-top:10px}.diagItem{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;font-size:12px;line-height:1.35}.diagItem b{display:block;margin-bottom:3px}.diagItem.err{background:#fff7f6;border-color:rgba(216,93,85,.28)}.diagItem.warn{background:#fffaf0;border-color:rgba(214,159,43,.32)}.diagMono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;white-space:pre-wrap;word-break:break-word;color:var(--muted)}.sectionError{background:#fff7f6;border:1px solid rgba(216,93,85,.25);border-radius:20px;padding:16px;margin:12px 0}.sectionError b{color:var(--red)}.safeStatus{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.safeDot{width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block}.safeDot.warn{background:#d69f2b}.safeDot.err{background:var(--red)}.dangerZone{background:#fff7f6;border:1px solid rgba(216,93,85,.25);border-radius:20px;padding:14px;margin-top:12px}.versionPill{display:inline-flex;border-radius:999px;background:#eef1ef;color:var(--muted);padding:6px 10px;font-size:12px;font-weight:900}
 @media(max-width:760px){.stabilityGrid{grid-template-columns:1fr}}
+
+.appModeCard,.globalSearchCard,.trashCard,.auditCard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;margin:10px 0}.globalSearchResults{display:grid;gap:10px;margin-top:12px}.searchHit{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px}.searchHit h3{margin:5px 0}.searchHit small{color:var(--muted);font-weight:800}.trashGrid,.auditGrid{display:grid;gap:10px}.trashItem,.auditItem{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.auditItem{display:block}.auditMeta{font-size:11px;color:var(--muted);font-weight:800;margin-top:4px}.quickTodayGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.quickTodayCard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px}.quickTodayCard b{display:block;font-size:20px;margin-top:5px}.installHint{background:linear-gradient(135deg,#fffefa,#eaf6f1);border:1px solid rgba(93,167,144,.25);border-radius:20px;padding:14px;margin-top:10px}.installSteps{margin:8px 0 0;padding-left:18px;color:var(--muted);line-height:1.45}.offlinePill{display:inline-flex;border-radius:999px;background:var(--soft);color:var(--brand2);font-size:12px;font-weight:900;padding:6px 10px}@media(max-width:760px){.quickTodayGrid{grid-template-columns:1fr}.trashItem{display:grid}}
 
   </style>
 </head>
@@ -182,11 +189,19 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
       <section id="familyTracker" class="trackerSection hidden">
         <nav class="tabs" id="familyTabs">
           <button class="tab active" data-panel="family-home">Обзор</button>
+          <button class="tab" data-panel="family-today">Сегодня</button>
           <button class="tab" data-panel="family-calendar">Календарь</button>
+          <button class="tab" data-panel="family-search">Поиск</button>
+          <button class="tab" data-panel="family-trash">Корзина</button>
+          <button class="tab" data-panel="family-audit">История</button>
           <button class="tab" data-panel="family-backups">Ещё / Резерв</button>
         </nav>
         <div class="panel active" id="family-home"></div>
+        <div class="panel" id="family-today"></div>
         <div class="panel" id="family-calendar"></div>
+        <div class="panel" id="family-search"></div>
+        <div class="panel" id="family-trash"></div>
+        <div class="panel" id="family-audit"></div>
         <div class="panel" id="family-backups"></div>
       </section>
     </div>
@@ -5476,8 +5491,8 @@ let feedingCalendarMonth = "";
 let feedingCalendarSelectedDate = "";
 let feedingEntryPrefillDate = "";
 let authMode = "login";
-const APP_VERSION = "MyBase v10 Stability Pack";
-const DATA_VERSION = "1.1";
+const APP_VERSION = "MyBase v12 App Mode";
+const DATA_VERSION = "1.2";
 let diagnosticsLog = [];
 let lastSelfCheck = null;
 
@@ -5576,6 +5591,9 @@ function normalizeFeedingExtras(){
   feeding.development.illnesses = safeArray(feeding.development.illnesses);
   feeding.familyEvents = safeArray(feeding.familyEvents);
   feeding.documents = safeArray(feeding.documents);
+  feeding.trash = ensureObject(feeding.trash);
+  feeding.trash.items = safeArray(feeding.trash.items);
+  feeding.auditLog = safeArray(feeding.auditLog);
   feeding.vaccines = safeArray(feeding.vaccines);
   feeding.entries.forEach((e,i)=>{ if(!e.id) e.id="e_fix_"+i+"_"+Date.now(); if(!e.date) e.date=today(); if(!e.meal) e.meal="Утро"; if(!e.age) e.age=babyAgeLabel(e.date); });
 }
@@ -5729,6 +5747,7 @@ function showApp(){
 }
 
 async function init(){
+  initPwaMode();
   showAuth();
   bindNavigation();
 
@@ -5911,8 +5930,8 @@ function mainNavActive(tr,p){
   if(activeTracker!==tr) return false;
   if(tr==="feeding" && p==="feeding-home") return feedingPanel==="feeding-home";
   if(tr==="feeding" && p==="feeding-entry") return feedingPanel!=="feeding-home";
-  if(tr==="family" && p==="family-calendar") return familyPanel!=="family-backups";
-  if(tr==="family" && p==="family-backups") return familyPanel==="family-backups";
+  if(tr==="family" && p==="family-calendar") return familyPanel==="family-calendar";
+  if(tr==="family" && p==="family-backups") return activeTracker==="family" && !["family-home","family-calendar"].includes(familyPanel);
   return panelForTracker(tr)===p;
 }
 function renderAll(){
@@ -5989,6 +6008,9 @@ function babyDashboardStats(){
   const month=monthKey(today());
   const monthNew=(feeding.entries||[]).filter(e=>monthKey(e.date)===month && String(e.status||"").toLowerCase().includes("введ")).length;
   return {feeding:st,growth:g,illness,todayEntries,monthNew,teeth:teethCount(),events:upcomingEvents(3)};
+}
+function dashboardData(){
+  return babyDashboardStats();
 }
 function smartAssistantHtml(){
   const data=babyDashboardStats();
@@ -6200,10 +6222,12 @@ function homeQuickActionsHtml(){
     <button class="quickActionCard" data-quick-go="feeding-entry"><b>➕</b><span>Добавить прикорм</span></button>
     <button class="quickActionCard" data-quick-go="feeding-development"><b>📏</b><span>Рост / вес</span></button>
     <button class="quickActionCard" data-quick-go="feeding-development"><b>🦷</b><span>Отметить зуб</span></button>
+    <button class="quickActionCard" data-quick-go="family-today"><b>📱</b><span>Сегодня</span></button>
     <button class="quickActionCard" data-quick-go="family-calendar"><b>📅</b><span>Событие</span></button>
     <button class="quickActionCard" data-quick-go="savings-add"><b>🏦</b><span>Пополнение</span></button>
     <button class="quickActionCard" data-quick-go="savings-goals"><b>🎯</b><span>Цели</span></button>
     <button class="quickActionCard" data-quick-go="savings-report"><b>📄</b><span>Отчёт</span></button>
+    <button class="quickActionCard" data-quick-go="family-search"><b>🔎</b><span>Поиск</span></button>
     <button class="quickActionCard" data-quick-go="family-backups"><b>☁️</b><span>Резерв</span></button>
   </div>`;
 }
@@ -6293,7 +6317,9 @@ function renderFeedingProducts(){
         ? `Продукт «${p.name}» уже есть в истории прикорма. Удалить его только из списка продуктов? История записей останется.`
         : `Удалить продукт «${p.name}» из списка?`;
       if(!confirm(msg)) return;
+      moveToTrash("product",p,p.name);
       feeding.products=(feeding.products||[]).filter(x=>String(x.id||"")!==String(id));
+      addAudit("Удалён продукт", p.name, "Прикорм");
       await saveFeeding(); toast("Продукт удалён"); renderAll();
     });
   };
@@ -6523,9 +6549,11 @@ function renderFeedingEntry(){
         const entry=(feeding.entries||[]).find(x=>String(x.id||"")===String(id));
         const title=entry ? `${entry.product||"запись"}${entry.planDay?" за день "+entry.planDay:""}` : "эту запись";
         if(!confirm(`Удалить ${title}?`)) return;
+        if(entry) moveToTrash("feedingEntry",entry,entry.product||"Запись прикорма");
         feeding.entries=(feeding.entries||[]).filter(x=>String(x.id||"")!==String(id));
+        addAudit("Удалена запись прикорма", entry?.product||title, "Прикорм");
         if(String(editingFeedingEntryId)===String(id)) editingFeedingEntryId="";
-        await saveFeeding(); toast("Запись удалена"); renderAll();
+        await saveFeeding(); toast("Запись перемещена в корзину"); renderAll();
       };
     });
   };
@@ -6649,11 +6677,11 @@ function renderFeedingDevelopment(){
   <div class="twoCol"><form class="card" id="toothForm"><h3>Зубы</h3><div class="formGrid"><label>Зуб<select name="tooth">${BABY_TEETH.map(t=>`<option>${esc(t)}</option>`).join("")}</select></label><label>Дата появления<input name="date" type="date" value="${today()}" required></label><label class="span2">Заметка<input name="note" placeholder="Например: прорезался вечером"></label></div><button class="btn btnPrimary" type="submit">Отметить зуб</button></form><div class="card"><h3>Схема зубов</h3><p class="muted small">Верхний и нижний ряд расположены как у человека. Зубы, которые уже выросли, подсвечены зелёным. Нажми на подсвеченный зуб, чтобы удалить отметку.</p>${renderToothSchema(teeth,true)}</div></div>
   <div class="twoCol"><form class="card" id="illnessForm"><h3>Болезни</h3><div class="formGrid"><label>Начало<input name="startDate" type="date" value="${today()}" required></label><label>Конец<input name="endDate" type="date"></label><label>Температура максимум<input name="temperature" type="number" step="0.1" placeholder="37.8"></label><label>Симптомы<input name="symptoms" placeholder="кашель, насморк"></label><label>Лекарства<input name="meds" placeholder="Нурофен, капли"></label><label>Диагноз/врач<input name="diagnosis" placeholder="если есть"></label><label class="span2">Заметки<textarea name="notes"></textarea></label></div><button class="btn btnPrimary" type="submit">Сохранить болезнь</button></form><div class="card"><h3>История болезней</h3><div class="devList">${illnesses.map(x=>`<div class="devItem"><div><b>${esc(fmtDate(x.startDate))}${x.endDate?` — ${esc(fmtDate(x.endDate))}`:""}</b><div class="entryBadges" style="margin-top:8px">${x.temperature?`<span class="healthBadge red">${esc(x.temperature)} °C</span>`:""}${x.symptoms?`<span class="healthBadge blue">${esc(x.symptoms)}</span>`:""}</div><p class="muted small">${[x.meds?"Лекарства: "+x.meds:"",x.diagnosis?"Диагноз: "+x.diagnosis:"",x.notes].filter(Boolean).map(esc).join("<br>")}</p></div><button class="btn btnDanger" data-del-illness="${esc(x.id||"")}">Удалить</button></div>`).join("") || emptyState("📝","Пока нет записей","Добавь первую запись, и она появится здесь.")}</div></div></div>`;
   $("#growthForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const item={id:"g"+Date.now(),date:fd.get("date"),weight:fd.get("weight"),height:fd.get("height"),note:(fd.get("note")||"").trim()}; if(!item.weight && !item.height) return toast("Введи вес или рост"); feeding.development.growth.push(item); await saveFeeding(); toast("Измерение сохранено"); renderAll();};
-  $$('[data-del-growth]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.delGrowth; if(!confirmDanger("Удалить измерение?","Эта запись роста/веса будет удалена из истории.")) return; feeding.development.growth=feeding.development.growth.filter((x,i)=>String(x.id||i)!==String(id)); await saveFeeding(); renderAll();});
+  $$('[data-del-growth]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.delGrowth; if(!confirmDanger("Удалить измерение?","Эта запись роста/веса будет удалена из истории.")) return; const removed=feeding.development.growth.find((x,i)=>String(x.id||i)===String(id)); if(removed) moveToTrash("growth",removed,fmtDate(removed.date)); feeding.development.growth=feeding.development.growth.filter((x,i)=>String(x.id||i)!==String(id)); addAudit("Удалено измерение роста/веса", removed?fmtDate(removed.date):id, "Развитие"); await saveFeeding(); renderAll();});
   $("#toothForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); feeding.development.teeth[fd.get("tooth")]={date:fd.get("date"),note:(fd.get("note")||"").trim()}; await saveFeeding(); toast("Зуб отмечен"); renderAll();};
-  $$('[data-tooth-name]').forEach(btn=>btn.onclick=async()=>{const name=btn.dataset.toothName; const item=feeding.development.teeth[name]; if(!item) return; if(confirmDanger(`Удалить отметку зуба «${name}»?`,"Дата появления зуба будет удалена.")){ delete feeding.development.teeth[name]; await saveFeeding(); renderAll(); }});
+  $$('[data-tooth-name]').forEach(btn=>btn.onclick=async()=>{const name=btn.dataset.toothName; const item=feeding.development.teeth[name]; if(!item) return; if(confirmDanger(`Удалить отметку зуба «${name}»?`,"Дата появления зуба будет удалена.")){ moveToTrash("tooth",{name,value:item},name); delete feeding.development.teeth[name]; addAudit("Удалена отметка зуба", name, "Развитие"); await saveFeeding(); renderAll(); }});
   $("#illnessForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const item={id:"ill"+Date.now(),startDate:fd.get("startDate"),endDate:fd.get("endDate"),temperature:fd.get("temperature"),symptoms:(fd.get("symptoms")||"").trim(),meds:(fd.get("meds")||"").trim(),diagnosis:(fd.get("diagnosis")||"").trim(),notes:(fd.get("notes")||"").trim()}; feeding.development.illnesses.push(item); await saveFeeding(); toast("Запись болезни сохранена"); renderAll();};
-  $$('[data-del-illness]').forEach(btn=>btn.onclick=async()=>{if(!confirmDanger("Удалить запись болезни?","Симптомы, лекарства и заметки будут удалены.")) return; const id=btn.dataset.delIllness; feeding.development.illnesses=feeding.development.illnesses.filter(x=>String(x.id)!==String(id)); await saveFeeding(); renderAll();});
+  $$('[data-del-illness]').forEach(btn=>btn.onclick=async()=>{if(!confirmDanger("Удалить запись болезни?","Симптомы, лекарства и заметки будут удалены.")) return; const id=btn.dataset.delIllness; const removed=feeding.development.illnesses.find(x=>String(x.id)===String(id)); if(removed) moveToTrash("illness",removed,removed.symptoms||removed.diagnosis||fmtDate(removed.startDate)); feeding.development.illnesses=feeding.development.illnesses.filter(x=>String(x.id)!==String(id)); addAudit("Удалена запись болезни", removed?.symptoms||removed?.diagnosis||id, "Здоровье"); await saveFeeding(); renderAll();});
 }
 
 function renderFeedingControl(){
@@ -6774,10 +6802,82 @@ function savingsSummary(){
   return {total,goal,left,pct,filledMonths,leftMonths,avg,bestMonth:bestEntry?`${bestEntry[0]} • ${fmtMoney(bestEntry[1])}`:"—",forecast,deviation,lastTopup:last?`${fmtDate(last.date)} • ${fmtMoney(txBase(last))}`:"—",status:deviation>=0?"По плану":"Ниже плана",plan};
 }
 
+function initPwaMode(){
+  try{
+    const manifest={name:"MyBase",short_name:"MyBase",start_url:"./?app=1",display:"standalone",background_color:"#f6f4ee",theme_color:"#5da790",description:"Семейная база: Марк, календарь, накопления и документы",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%235da790'/%3E%3Ctext x='50%25' y='57%25' text-anchor='middle' font-size='250' font-family='Arial' font-weight='900' fill='white'%3EM%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
+    const old=document.querySelector('link[rel="manifest"]'); if(old) old.remove();
+    const link=document.createElement("link"); link.rel="manifest"; link.href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(manifest)); document.head.appendChild(link);
+  }catch(err){ logDiag?.("warn","PWA режим не инициализирован",err,"initPwaMode"); }
+}
+function addAudit(action, details="", area="Общее"){
+  try{
+    normalizeFeedingExtras();
+    feeding.auditLog.unshift({id:"a"+Date.now()+Math.random().toString(16).slice(2),time:new Date().toISOString(),action,details,area});
+    feeding.auditLog=feeding.auditLog.slice(0,250);
+  }catch(_){ }
+}
+function moveToTrash(kind,item,label=""){
+  try{
+    normalizeFeedingExtras();
+    feeding.trash.items.unshift({id:"trash"+Date.now()+Math.random().toString(16).slice(2),kind,label:label||kind,deletedAt:new Date().toISOString(),data:deep(item)});
+    feeding.trash.items=feeding.trash.items.slice(0,300);
+    addAudit("Перемещено в корзину", `${kind}: ${label||"без названия"}`, "Корзина");
+  }catch(_){ }
+}
+function trashLabel(x){
+  const d=x?.data||{};
+  return x?.label || d.product || d.name || d.title || d.note || x?.kind || "Запись";
+}
+function allSearchData(){
+  normalizeFeedingExtras(); normalizeSavings();
+  const out=[];
+  (feeding.products||[]).forEach(p=>out.push({type:"Продукт",title:p.name,subtitle:p.category,text:[p.name,p.category,p.note,p.allergenType,p.status].join(" "),go:"feeding-products"}));
+  (feeding.entries||[]).forEach(e=>out.push({type:"Прикорм",title:e.product,subtitle:`${fmtDate(e.date)} • ${e.meal||""}`,text:[e.product,e.category,e.date,e.meal,e.portion,e.reaction,e.status,e.notes].join(" "),go:"feeding-entry"}));
+  (feeding.development?.growth||[]).forEach(g=>out.push({type:"Рост/вес",title:fmtDate(g.date),subtitle:`${g.weight||"—"} кг • ${g.height||"—"} см`,text:[g.date,g.weight,g.height,g.note].join(" "),go:"feeding-development"}));
+  Object.entries(feeding.development?.teeth||{}).forEach(([name,v])=>out.push({type:"Зуб",title:name,subtitle:fmtDate(v.date),text:[name,v.date,v.note].join(" "),go:"feeding-development"}));
+  (feeding.development?.illnesses||[]).forEach(i=>out.push({type:"Болезнь",title:i.symptoms||i.diagnosis||"Запись",subtitle:fmtDate(i.startDate),text:[i.startDate,i.endDate,i.temperature,i.symptoms,i.meds,i.diagnosis,i.notes].join(" "),go:"feeding-development"}));
+  (feeding.familyEvents||[]).forEach(e=>out.push({type:"Календарь",title:e.title||eventTypeLabel(e.type),subtitle:`${fmtDate(e.date)} ${e.time||""}`,text:[e.date,e.time,eventTypeLabel(e.type),e.title,e.note].join(" "),go:"family-calendar"}));
+  (savings.goals||[]).forEach(g=>out.push({type:"Цель",title:g.name,subtitle:`${fmtMoney(goalTotal(g),g.currency)} / ${fmtMoney(g.amount,g.currency)}`,text:[g.name,g.amount,g.currency,g.startDate,g.endDate].join(" "),go:"savings-goals"}));
+  (savings.transactions||[]).forEach(t=>out.push({type:"Накопления",title:fmtMoney(t.amount,t.currency),subtitle:`${fmtDate(t.date)} • ${t.note||""}`,text:[t.date,t.amount,t.currency,t.note,t.type].join(" "),go:"savings-add"}));
+  (feeding.documents||[]).forEach(d=>out.push({type:"Документ",title:d.title,subtitle:`до ${fmtDate(d.expireDate)}`,text:[d.title,d.type,d.issueDate,d.expireDate,d.note].join(" "),go:"savings-documents"}));
+  return out;
+}
+function renderFamilyToday(){
+  const d=dashboardData(); const g=latestGrowth(); const event=upcomingEvents(1)[0]; const todayEntries=entriesForDate(today());
+  $("#family-today").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Быстрый режим</p><h2>Сегодня</h2></div><span class="offlinePill">${navigator.onLine?"Онлайн":"Оффлайн"}</span></div>
+  <div class="quickTodayGrid"><div class="quickTodayCard"><span>Возраст</span><b>${esc(babyAgeLabel(today()))}</b></div><div class="quickTodayCard"><span>Вес / рост</span><b>${g?.weight?esc(g.weight)+" кг":"—"} ${g?.height?"• "+esc(g.height)+" см":""}</b></div><div class="quickTodayCard"><span>Зубы</span><b>${teethCount()}</b></div><div class="quickTodayCard"><span>Прикорм сегодня</span><b>${todayEntries.length}</b></div><div class="quickTodayCard"><span>Ближайшее событие</span><b>${event?esc(event.title||eventTypeLabel(event.type)):"—"}</b></div><div class="quickTodayCard"><span>Накопления</span><b>${fmtMoney(savingsTotal())}</b></div></div>
+  <div class="card"><h3>⚡ Быстрые действия</h3><div class="quickActionsGrid"><button class="quickActionCard" data-quick-go="feeding-entry"><b>🥣</b><span>Прикорм</span></button><button class="quickActionCard" data-quick-go="feeding-development"><b>📏</b><span>Рост/вес</span></button><button class="quickActionCard" data-quick-go="feeding-development"><b>🦷</b><span>Зуб</span></button><button class="quickActionCard" data-quick-go="family-calendar"><b>📅</b><span>Событие</span></button><button class="quickActionCard" data-quick-go="savings-add"><b>🏦</b><span>Пополнение</span></button><button class="quickActionCard" data-quick-go="family-search"><b>🔎</b><span>Поиск</span></button></div></div>
+  <div class="installHint"><h3>📲 Режим приложения</h3><p class="muted small">Добавь MyBase на экран телефона: сайт будет открываться как приложение.</p><ol class="installSteps"><li>Открой сайт в Safari.</li><li>Нажми «Поделиться».</li><li>Выбери «На экран Домой».</li></ol></div>`;
+}
+function renderFamilySearch(){
+  $("#family-search").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Поиск</p><h2>Поиск по всему MyBase</h2></div></div><div class="globalSearchCard"><label>Введите слово<input id="globalSearchInput" type="search" placeholder="банан, температура, паспорт, квартира, прививка..."></label><div id="globalSearchResults" class="globalSearchResults"></div></div>`;
+  const input=$("#globalSearchInput"), box=$("#globalSearchResults");
+  const draw=()=>{ const q=normalizeSearch(input.value); if(!q){ box.innerHTML=emptyState("🔎","Начни вводить запрос","Поиск работает по прикорму, росту/весу, зубам, болезням, календарю, накоплениям и документам."); return; }
+    const list=allSearchData().filter(x=>normalizeSearch(x.text).includes(q)||normalizeSearch(x.title).includes(q)).slice(0,60);
+    box.innerHTML=list.map(x=>`<div class="searchHit"><small>${esc(x.type)} • ${esc(x.subtitle||"")}</small><h3>${highlightText(x.title||"—",q)}</h3><p class="muted small">${highlightText(String(x.text||"").slice(0,180),q)}</p><button class="btn" type="button" data-quick-go="${esc(x.go)}">Открыть раздел</button></div>`).join("") || emptyState("🙈","Ничего не найдено","Попробуй другое слово или часть слова."); };
+  input.oninput=draw; draw();
+}
+function renderFamilyTrash(){
+  normalizeFeedingExtras();
+  const items=feeding.trash.items||[];
+  $("#family-trash").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Защита данных</p><h2>Корзина</h2></div><span class="badge">${items.length} записей</span></div><div class="card"><p class="muted">Удалённые элементы сначала попадают сюда. Можно восстановить или удалить навсегда.</p><div class="trashGrid">${items.map(x=>`<div class="trashItem"><div><span class="badge gray">${esc(x.kind)}</span><h3 style="margin-top:8px">${esc(trashLabel(x))}</h3><p class="muted small">Удалено: ${esc(new Date(x.deletedAt).toLocaleString("ru-RU"))}</p></div><div class="row"><button class="btn btnPrimary" data-restore-trash="${esc(x.id)}">Восстановить</button><button class="btn btnDanger" data-delete-trash="${esc(x.id)}">Удалить</button></div></div>`).join("") || emptyState("🗑️","Корзина пуста","Удалённые элементы появятся здесь.")}</div></div>`;
+  $$('[data-restore-trash]').forEach(btn=>btn.onclick=async()=>{const item=(feeding.trash.items||[]).find(x=>x.id===btn.dataset.restoreTrash); if(!item) return; const data=deep(item.data); if(item.kind==="product") feeding.products.push(data); else if(item.kind==="feedingEntry") feeding.entries.push(data); else if(item.kind==="growth") feeding.development.growth.push(data); else if(item.kind==="illness") feeding.development.illnesses.push(data); else if(item.kind==="familyEvent") feeding.familyEvents.push(data); else if(item.kind==="document") feeding.documents.push(data); else if(item.kind==="tooth") feeding.development.teeth[data.name]=data.value; else if(item.kind==="transaction") savings.transactions.push(data); else if(item.kind==="goal") savings.goals.push(data); feeding.trash.items=feeding.trash.items.filter(x=>x.id!==item.id); addAudit("Восстановлено из корзины", trashLabel(item), "Корзина"); await saveFeeding(); if(["transaction","goal"].includes(item.kind)) await saveSavings(); renderAll(); toast("Восстановлено");});
+  $$('[data-delete-trash]').forEach(btn=>btn.onclick=async()=>{if(!confirmTypedDelete("Удалить из корзины навсегда?","После этого восстановить запись будет нельзя.")) return; const item=(feeding.trash.items||[]).find(x=>x.id===btn.dataset.deleteTrash); feeding.trash.items=feeding.trash.items.filter(x=>x.id!==btn.dataset.deleteTrash); addAudit("Удалено из корзины навсегда", trashLabel(item||{}), "Корзина"); await saveFeeding(); renderAll();});
+}
+function renderFamilyAudit(){
+  normalizeFeedingExtras(); const list=feeding.auditLog||[];
+  $("#family-audit").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">История изменений</p><h2>Журнал действий</h2></div><button class="btn" id="downloadAuditLog">Скачать журнал</button></div><div class="card"><div class="auditGrid">${list.map(x=>`<div class="auditItem"><b>${esc(x.action)}</b><div class="auditMeta">${esc(x.area||"Общее")} • ${esc(new Date(x.time).toLocaleString("ru-RU"))}</div><p class="muted small">${esc(x.details||"")}</p></div>`).join("") || emptyState("🧾","История пока пустая","Здесь будут появляться удаления, восстановления, импорт и важные изменения.")}</div></div>`;
+  $("#downloadAuditLog").onclick=()=>downloadJson(`mybase-audit-${today()}.json`,{appVersion:APP_VERSION,items:list});
+}
+
 function renderFamily(){
   normalizeFeedingExtras();
   safeRender("Семейный обзор", renderFamilyHome, "#family-home");
+  safeRender("Сегодня", renderFamilyToday, "#family-today");
   safeRender("Семейный календарь", renderFamilyCalendar, "#family-calendar");
+  safeRender("Глобальный поиск", renderFamilySearch, "#family-search");
+  safeRender("Корзина", renderFamilyTrash, "#family-trash");
+  safeRender("История изменений", renderFamilyAudit, "#family-audit");
   safeRender("Ещё / Диагностика", renderFamilyBackups, "#family-backups");
 }
 function familyMonthStart(month){ return new Date(month+"-01T00:00:00"); }
@@ -6811,10 +6911,10 @@ function renderFamilyCalendar(){
   $("#familyNextMonth").onclick=()=>{familyCalendarMonth=shiftMonth(familyCalendarMonth,1); renderAll();};
   $$('[data-family-date]').forEach(btn=>btn.onclick=()=>{familyCalendarSelectedDate=btn.dataset.familyDate; renderAll();});
   $("#familyEventForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const item={id:"fe"+Date.now(),date:fd.get("date"),time:fd.get("time"),type:fd.get("type"),title:(fd.get("title")||"").trim(),note:(fd.get("note")||"").trim()}; feeding.familyEvents.push(item); familyCalendarSelectedDate=item.date; familyCalendarMonth=monthKey(item.date); await saveFeeding(); toast("Событие добавлено"); renderAll();};
-  $$('[data-del-family-event]').forEach(btn=>btn.onclick=async()=>{ if(!confirmDanger("Удалить событие?","Событие исчезнет из семейного календаря.")) return; feeding.familyEvents=eventsList().filter(e=>String(e.id)!==String(btn.dataset.delFamilyEvent)); await saveFeeding(); renderAll(); });
+  $$('[data-del-family-event]').forEach(btn=>btn.onclick=async()=>{ if(!confirmDanger("Удалить событие?","Событие исчезнет из семейного календаря.")) return; const removed=eventsList().find(e=>String(e.id)===String(btn.dataset.delFamilyEvent)); if(removed) moveToTrash("familyEvent",removed,removed.title||eventTypeLabel(removed.type)); feeding.familyEvents=eventsList().filter(e=>String(e.id)!==String(btn.dataset.delFamilyEvent)); addAudit("Удалено событие", removed?.title||"Событие", "Календарь"); await saveFeeding(); renderAll(); });
 }
 function renderFamilyBackups(){
-  $("#family-backups").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Ещё</p><h2>Отчёты, безопасность, резерв и диагностика</h2></div><span class="badge">${esc(APP_VERSION)}</span></div><div class="card">${pdfBackupToolsHtml()}</div>`;
+  $("#family-backups").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Ещё</p><h2>Отчёты, безопасность, резерв и диагностика</h2></div><span class="badge">${esc(APP_VERSION)}</span></div><div class="appModeCard"><h3>📱 App Mode</h3><p class="muted small">MyBase подготовлен для добавления на экран телефона. На iPhone открой сайт в Safari → Поделиться → На экран Домой.</p><span class="offlinePill">${navigator.onLine?"Сейчас онлайн":"Сейчас оффлайн"}</span></div><div class="card">${pdfBackupToolsHtml()}</div>`;
   bindPdfBackupTools();
 }
 
@@ -6877,7 +6977,7 @@ function renderSavingsAdd(){
   const form=$("#txForm"); form.currency.onchange=()=>{form.rate.value=savings.rates[form.currency.value]||1;}; form.currency.onchange();
   form.onsubmit=async e=>{e.preventDefault(); const fd=new FormData(form); savings.transactions.unshift({id:"t"+Date.now(),goalId:fd.get("goalId")||activeGoalId(),type:fd.get("type"),amount:n(fd.get("amount")),currency:fd.get("currency"),rateAtAdd:n(fd.get("rate")),date:fd.get("date"),note:fd.get("note")}); savings.rates[fd.get("currency")]=n(fd.get("rate")); await saveSavings(); toast("Запись сохранена"); renderAll(); };
   $$('[data-fast]').forEach(b=>b.onclick=()=>{form.amount.value=b.dataset.fast;});
-  $$('[data-del-tx]').forEach(b=>b.onclick=async()=>{const i=n(b.dataset.delTx); if(confirmDanger("Удалить запись накопления?","Сумма будет удалена из истории накоплений.")){savings.transactions.splice(i,1); await saveSavings(); renderAll();}});
+  $$('[data-del-tx]').forEach(b=>b.onclick=async()=>{const i=n(b.dataset.delTx); if(confirmDanger("Удалить запись накопления?","Сумма будет удалена из истории накоплений.")){const removed=savings.transactions[i]; if(removed) moveToTrash("transaction",removed,removed.note||fmtMoney(removed.amount,removed.currency)); savings.transactions.splice(i,1); addAudit("Удалена запись накопления", removed?fmtMoney(removed.amount,removed.currency):String(i), "Накопления"); await saveFeeding(); await saveSavings(); renderAll();}});
 }
 function renderSavingsStats(){
   const st=savingsSummary(); const rows=yearRows(); const byMonth=Object.entries(savingsByMonth()).sort(); const max=Math.max(1,...byMonth.map(([,v])=>Math.abs(v))); const activeTx=transactionsForGoal(); const biggest=activeTx.slice().sort((a,b)=>Math.abs(txBase(b))-Math.abs(txBase(a)))[0];
@@ -6914,7 +7014,7 @@ function renderSavingsGoals(){
   <div class="goalCards">${(savings.goals||[]).map(g=>{const total=goalTotal(g), pct=goalPct(g); return `<div class="goalMiniCard ${g.id===activeGoalId()?"active":""}"><div class="goalMiniHead"><div><div class="goalMiniTitle">${esc(g.name)}</div><span>${fmtMoney(total,g.currency)} / ${fmtMoney(g.amount,g.currency)}</span></div><button class="btn" data-active-goal="${esc(g.id)}">Сделать активной</button></div><div class="progress" style="margin:12px 0"><i style="width:${pct}%"></i></div><span>${pct.toFixed(1)}% • ${esc(fmtDate(g.startDate))} — ${esc(fmtDate(g.endDate))}</span><div class="row" style="margin-top:12px"><button class="btn btnDanger" data-del-goal="${esc(g.id)}">Удалить</button></div></div>`}).join("")}</div>
   <form class="card" id="goalAddForm"><h3>Добавить новую цель</h3><div class="formGrid"><label>Название<input name="name" required placeholder="Авто, отпуск, резерв"></label><label>Сумма<input name="amount" type="number" required></label><label>Валюта<select name="currency">${allCurrencyOptionsHtml(savings.goal.currency)}</select></label><label>Дата начала<input name="startDate" type="date" value="${today()}"></label><label>Дата окончания<input name="endDate" type="date"></label><label class="span2">Заметка<input name="note" placeholder="Для чего эта цель"></label></div><button class="btn btnPrimary" type="submit">Добавить цель</button></form>`;
   $$('[data-active-goal]').forEach(btn=>btn.onclick=async()=>{savings.activeGoalId=btn.dataset.activeGoal; normalizeSavings(); await saveSavings(); renderAll();});
-  $$('[data-del-goal]').forEach(btn=>btn.onclick=async()=>{if((savings.goals||[]).length<=1) return toast("Нельзя удалить последнюю цель"); if(!confirmTypedDelete("Удалить цель накоплений?","Пополнения этой цели останутся в общей истории, но не будут видны внутри цели.")) return; savings.goals=savings.goals.filter(g=>g.id!==btn.dataset.delGoal); if(savings.activeGoalId===btn.dataset.delGoal) savings.activeGoalId=savings.goals[0].id; normalizeSavings(); await saveSavings(); renderAll();});
+  $$('[data-del-goal]').forEach(btn=>btn.onclick=async()=>{if((savings.goals||[]).length<=1) return toast("Нельзя удалить последнюю цель"); if(!confirmTypedDelete("Удалить цель накоплений?","Пополнения этой цели останутся в общей истории, но не будут видны внутри цели.")) return; const removed=(savings.goals||[]).find(g=>g.id===btn.dataset.delGoal); if(removed) moveToTrash("goal",removed,removed.name); savings.goals=savings.goals.filter(g=>g.id!==btn.dataset.delGoal); if(savings.activeGoalId===btn.dataset.delGoal) savings.activeGoalId=savings.goals[0].id; normalizeSavings(); addAudit("Удалена цель накоплений", removed?.name||btn.dataset.delGoal, "Накопления"); await saveFeeding(); await saveSavings(); renderAll();});
   $("#goalAddForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); const g={id:"goal"+Date.now(),name:(fd.get("name")||"").trim(),amount:n(fd.get("amount")),currency:fd.get("currency"),startDate:fd.get("startDate")||today(),endDate:fd.get("endDate")||"",note:(fd.get("note")||"").trim()}; savings.goals.push(g); savings.activeGoalId=g.id; normalizeSavings(); await saveSavings(); toast("Цель добавлена"); renderAll();};
 }
 function renderSavingsWhatIf(){
@@ -6938,7 +7038,7 @@ function renderSavingsDocuments(){
   <form class="card" id="docForm"><div class="formGrid"><label>Тип<select name="type"><option>Паспорт</option><option>Свидетельство</option><option>Карта проживания</option><option>Медицина</option><option>Договор</option><option>Другое</option></select></label><label>Название<input name="title" required placeholder="Паспорт Марка"></label><label>Дата выдачи<input name="issueDate" type="date"></label><label>Действует до<input name="expireDate" type="date"></label><label class="span2">Заметка<textarea name="note" placeholder="Где хранится, номер, что нужно сделать"></textarea></label></div><button class="btn btnPrimary" type="submit">Добавить документ</button></form>
   <div class="documentCards">${docs.map(d=>{const days=d.expireDate?Math.ceil((new Date(d.expireDate)-new Date())/86400000):9999; return `<div class="documentCard ${days<=60?"expiring":""}"><span class="docType">${esc(d.type||"Документ")}</span><h3 style="margin-top:8px">${esc(d.title||"Документ")}</h3><p class="muted small">Выдан: ${esc(fmtDate(d.issueDate))} • До: ${esc(fmtDate(d.expireDate))}</p>${days<=60?`<span class="badge red">Срок скоро: ${days} дн.</span>`:""}<p class="muted small">${esc(d.note||"")}</p><button class="btn btnDanger" data-del-doc="${esc(d.id)}">Удалить</button></div>`}).join("")||emptyState("📄","Документов пока нет","Добавь паспорт, карту, свидетельство или медицинский документ.")}</div>`;
   $("#docForm").onsubmit=async e=>{e.preventDefault(); const fd=new FormData(e.currentTarget); feeding.documents.push({id:"doc"+Date.now(),type:fd.get("type"),title:(fd.get("title")||"").trim(),issueDate:fd.get("issueDate"),expireDate:fd.get("expireDate"),note:(fd.get("note")||"").trim()}); await saveFeeding(); toast("Документ добавлен"); renderAll();};
-  $$('[data-del-doc]').forEach(btn=>btn.onclick=async()=>{if(!confirmDanger("Удалить документ?","Информация о документе и сроках будет удалена.")) return; feeding.documents=feeding.documents.filter(d=>d.id!==btn.dataset.delDoc); await saveFeeding(); renderAll();});
+  $$('[data-del-doc]').forEach(btn=>btn.onclick=async()=>{if(!confirmDanger("Удалить документ?","Информация о документе и сроках будет удалена.")) return; const removed=(feeding.documents||[]).find(d=>d.id===btn.dataset.delDoc); if(removed) moveToTrash("document",removed,removed.title||"Документ"); feeding.documents=feeding.documents.filter(d=>d.id!==btn.dataset.delDoc); addAudit("Удалён документ", removed?.title||btn.dataset.delDoc, "Документы"); await saveFeeding(); renderAll();});
 }
 
 function renderSavingsSettings(){
