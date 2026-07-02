@@ -95,26 +95,32 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
       </header>
 
       <div class="trackerGrid" id="trackerHome">
-        <button class="trackerCard active" data-tracker="feeding">
-          <div class="trackerIcon">🥣</div><h2>Прикорм</h2><p class="muted">Продукты, категории, реакции и история введения.</p>
+        <button class="trackerCard active" data-tracker="feeding" data-panel="feeding-home">
+          <div class="trackerIcon">🏠</div><h2>Главная</h2><p class="muted">Сегодня, умный помощник, быстрые действия и важные события.</p>
         </button>
-        <button class="trackerCard" data-tracker="savings">
-          <div class="trackerIcon">🏦</div><h2>Накопления</h2><p class="muted">Цель, пополнения, валюты и прогресс.</p>
+        <button class="trackerCard" data-tracker="feeding" data-panel="feeding-entry">
+          <div class="trackerIcon">👶</div><h2>Марк</h2><p class="muted">Прикорм, продукты, рост, вес, зубы, болезни и развитие.</p>
         </button>
-        <button class="trackerCard" data-tracker="family">
-          <div class="trackerIcon">📅</div><h2>Семейный календарь</h2><p class="muted">Врачи, документы, прививки, важные семейные события и напоминания.</p>
+        <button class="trackerCard" data-tracker="family" data-panel="family-calendar">
+          <div class="trackerIcon">📅</div><h2>Календарь</h2><p class="muted">Семейные события, врачи, документы, прививки и напоминания.</p>
+        </button>
+        <button class="trackerCard" data-tracker="savings" data-panel="savings-home">
+          <div class="trackerIcon">🏦</div><h2>Накопления</h2><p class="muted">Цели, пополнения, прогноз, отчёты и валюты.</p>
+        </button>
+        <button class="trackerCard" data-tracker="family" data-panel="family-backups">
+          <div class="trackerIcon">☰</div><h2>Ещё</h2><p class="muted">PDF-отчёты, резервные копии, документы и настройки.</p>
         </button>
       </div>
 
       <section id="feedingTracker" class="trackerSection">
         <nav class="tabs" id="feedingTabs">
-          <button class="tab active" data-panel="feeding-home">Главная</button>
-          <button class="tab" data-panel="feeding-products">Продукты</button>
+          <button class="tab active" data-panel="feeding-home">Обзор</button>
           <button class="tab" data-panel="feeding-entry">Ввод</button>
-          <button class="tab" data-panel="feeding-calendar">Календарь</button>
-          <button class="tab" data-panel="feeding-history">Поиск</button>
-          <button class="tab" data-panel="feeding-stats">Статистика</button>
+          <button class="tab" data-panel="feeding-history">История</button>
+          <button class="tab" data-panel="feeding-products">Продукты</button>
           <button class="tab" data-panel="feeding-development">Развитие</button>
+          <button class="tab" data-panel="feeding-calendar">Календарь</button>
+          <button class="tab" data-panel="feeding-stats">Статистика</button>
           <button class="tab" data-panel="feeding-control">Контроль</button>
           <button class="tab" data-panel="feeding-add">Добавить</button>
           <button class="tab" data-panel="feeding-data">Данные</button>
@@ -133,13 +139,13 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 
       <section id="savingsTracker" class="trackerSection hidden">
         <nav class="tabs" id="savingsTabs">
-          <button class="tab active" data-panel="savings-home">Главная</button>
-          <button class="tab" data-panel="savings-add">Пополнения</button>
+          <button class="tab active" data-panel="savings-home">Обзор</button>
           <button class="tab" data-panel="savings-goals">Цели</button>
-          <button class="tab" data-panel="savings-whatif">Что если</button>
-          <button class="tab" data-panel="savings-stats">Статистика</button>
-          <button class="tab" data-panel="savings-currencies">Валюты</button>
+          <button class="tab" data-panel="savings-add">Пополнения</button>
+          <button class="tab" data-panel="savings-whatif">Калькулятор</button>
+          <button class="tab" data-panel="savings-stats">График</button>
           <button class="tab" data-panel="savings-report">Отчёт</button>
+          <button class="tab" data-panel="savings-currencies">Валюты</button>
           <button class="tab" data-panel="savings-documents">Документы</button>
           <button class="tab" data-panel="savings-settings">Настройки</button>
         </nav>
@@ -156,9 +162,9 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 
       <section id="familyTracker" class="trackerSection hidden">
         <nav class="tabs" id="familyTabs">
-          <button class="tab active" data-panel="family-home">Главная</button>
+          <button class="tab active" data-panel="family-home">Обзор</button>
           <button class="tab" data-panel="family-calendar">Календарь</button>
-          <button class="tab" data-panel="family-backups">PDF / Резерв</button>
+          <button class="tab" data-panel="family-backups">Ещё / Резерв</button>
         </nav>
         <div class="panel active" id="family-home"></div>
         <div class="panel" id="family-calendar"></div>
@@ -5735,7 +5741,16 @@ function bindAuth(){
 }
 
 function bindNavigation(){
-  $$(".trackerCard").forEach(b => b.addEventListener("click", () => { activeTracker=b.dataset.tracker; renderAll(); }));
+  $$(".trackerCard").forEach(b => b.addEventListener("click", () => {
+    activeTracker=b.dataset.tracker;
+    const p=b.dataset.panel;
+    if(p){
+      if(p.startsWith("feeding")) feedingPanel=p;
+      if(p.startsWith("savings")) savingsPanel=p;
+      if(p.startsWith("family")) familyPanel=p;
+    }
+    renderAll();
+  }));
   document.addEventListener("click", (e)=>{
     const quick=e.target.closest("[data-quick-go]"); if(quick){
       const id=quick.dataset.quickGo;
@@ -5768,23 +5783,46 @@ function setPanel(containerId, activeId){
   $$(".panel", $(containerId)).forEach(p => p.classList.toggle("active", p.id === activeId));
   $$(".tab", $(containerId)).forEach(t => t.classList.toggle("active", t.dataset.panel === activeId));
 }
+function panelForTracker(tr){
+  if(tr==="feeding") return feedingPanel;
+  if(tr==="savings") return savingsPanel;
+  return familyPanel;
+}
+function mainNavActive(tr,p){
+  if(activeTracker!==tr) return false;
+  if(tr==="feeding" && p==="feeding-home") return feedingPanel==="feeding-home";
+  if(tr==="feeding" && p==="feeding-entry") return feedingPanel!=="feeding-home";
+  if(tr==="family" && p==="family-calendar") return familyPanel!=="family-backups";
+  if(tr==="family" && p==="family-backups") return familyPanel==="family-backups";
+  return panelForTracker(tr)===p;
+}
 function renderAll(){
-  $$(".trackerCard").forEach(c => c.classList.toggle("active", c.dataset.tracker===activeTracker));
+  $$(".trackerCard").forEach(c => {
+    const p=c.dataset.panel;
+    c.classList.toggle("active", mainNavActive(c.dataset.tracker,p));
+  });
   $("#feedingTracker").classList.toggle("hidden", activeTracker!=="feeding");
   $("#savingsTracker").classList.toggle("hidden", activeTracker!=="savings");
   $("#familyTracker").classList.toggle("hidden", activeTracker!=="family");
   renderFeeding(); renderSavings(); renderFamily(); renderBottomNav();
   setPanel("#feedingTracker", feedingPanel); setPanel("#savingsTracker", savingsPanel); setPanel("#familyTracker", familyPanel);
 }
+function goNav(tr,p){
+  activeTracker=tr;
+  if(p?.startsWith("feeding")) feedingPanel=p;
+  if(p?.startsWith("savings")) savingsPanel=p;
+  if(p?.startsWith("family")) familyPanel=p;
+  renderAll();
+}
 function renderBottomNav(){
-  const items = activeTracker === "feeding" ? [
-    ["feeding","feeding-home","🥣","Главная"],["feeding","feeding-products","🍎","Продукты"],["feeding","feeding-entry","➕","Ввод"],["feeding","feeding-calendar","📅","Календарь"],["family","family-calendar","🗓️","Семья"],["savings","savings-home","🏦","Накопления"]
-  ] : activeTracker === "savings" ? [
-    ["savings","savings-home","⌂","Главная"],["savings","savings-add","⊕","Пополнения"],["savings","savings-goals","🎯","Цели"],["savings","savings-whatif","🧮","Что если"],["savings","savings-report","📄","Отчёт"],["family","family-calendar","🗓️","Семья"]
-  ] : [
-    ["family","family-home","⌂","Главная"],["family","family-calendar","🗓️","Календарь"],["family","family-backups","📄","PDF/Резерв"],["feeding","feeding-home","🥣","Прикорм"],["savings","savings-home","🏦","Накопления"]
+  const items = [
+    ["feeding","feeding-home","🏠","Главная"],
+    ["feeding","feeding-entry","👶","Марк"],
+    ["family","family-calendar","📅","Календарь"],
+    ["savings","savings-home","🏦","Накопления"],
+    ["family","family-backups","☰","Ещё"]
   ];
-  $("#bottomNav").innerHTML = items.map(([tr,p,ico,txt]) => `<button class="bottomBtn ${activeTracker===tr && (feedingPanel===p || savingsPanel===p || familyPanel===p)?"active":""}" data-tracker="${tr}" data-panel="${p}"><b>${ico}</b>${txt}</button>`).join("");
+  $("#bottomNav").innerHTML = items.map(([tr,p,ico,txt]) => `<button class="bottomBtn ${mainNavActive(tr,p)?"active":""}" data-tracker="${tr}" data-panel="${p}"><b>${ico}</b>${txt}</button>`).join("");
 }
 
 function feedingStats(){
@@ -5970,29 +6008,67 @@ function bindPdfBackupTools(){
   const dl=$("#downloadFullBackup"); if(dl) dl.onclick=downloadFullBackup;
   const im=$("#importFullBackup"); if(im) im.onchange=importFullBackup;
 }
-function homeOverviewHtml(st){
+function todayHomeCardHtml(st){
   const d=babyDashboardStats();
   const growth=d.growth;
   const lastProduct=[...(feeding.entries||[])].sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")) || n(b.number)-n(a.number))[0];
   const nextEvent=upcomingEvents(1)[0];
-  return `<div class="sectionHead"><div><p class="eyebrow">MyBase</p><h2>Главная страница семьи</h2></div><span class="badge">${esc(today())}</span></div>
-    <div class="homeHeroGrid"><div class="childHeroCard"><p class="eyebrow">Марк</p><h2>${esc(feeding.child?.name||"Марк")} • ${esc(babyAgeLabel(today()))}</h2><p class="muted">Последняя дата прикорма: ${esc(st.latest)}. Все важные данные собраны на одной странице.</p><div class="childFacts"><div class="childFact"><span>Вес</span><b>${growth?.weight?esc(growth.weight)+" кг":"—"}</b></div><div class="childFact"><span>Рост</span><b>${growth?.height?esc(growth.height)+" см":"—"}</b></div><div class="childFact"><span>Зубы</span><b>${teethCount()}</b></div><div class="childFact"><span>День прикорма</span><b>${latestPlanDay()}</b></div></div></div>${smartAssistantHtml()}</div>
-    <div class="homeSectionTitle"><h3>📌 Карточка сегодня</h3><span class="badge">быстрый обзор</span></div>
-    <div class="todayGrid"><div class="todayCard"><span>Возраст</span><b>${esc(babyAgeLabel(today()))}</b></div><div class="todayCard"><span>Прикорм</span><b>День ${latestPlanDay()}</b></div><div class="todayCard"><span>Последний продукт</span><b>${esc(lastProduct?.product||"—")}</b></div><div class="todayCard"><span>Ближайшее событие</span><b>${nextEvent?esc(nextEvent.title||eventTypeLabel(nextEvent.type)):"—"}</b></div></div>
-    <div class="homeSectionTitle"><h3>⚡ Быстрые кнопки</h3></div>
-    <div class="quickActionsGrid"><button class="quickActionCard" data-quick-go="feeding-entry"><b>➕</b><span>Добавить прикорм</span></button><button class="quickActionCard" data-quick-go="feeding-development"><b>📏</b><span>Рост / вес</span></button><button class="quickActionCard" data-quick-go="feeding-development"><b>🦷</b><span>Отметить зуб</span></button><button class="quickActionCard" data-quick-go="family-calendar"><b>📅</b><span>Семейное событие</span></button><button class="quickActionCard" data-quick-go="savings-add"><b>🏦</b><span>Пополнение</span></button><button class="quickActionCard" data-quick-go="savings-goals"><b>🎯</b><span>Цели</span></button><button class="quickActionCard" data-quick-go="savings-report"><b>📄</b><span>Отчёт за месяц</span></button><button class="quickActionCard" data-quick-go="savings-documents"><b>🗂️</b><span>Документы</span></button></div>
-    ${dashboardPanelHtml()}
-    <div class="homeTools"><div class="miniChartCard"><h3>📈 Вес и рост</h3>${lineSvg(pointsForGrowth("weight"),"weight","Вес","кг")}${lineSvg(pointsForGrowth("height"),"height","Рост","см")}</div><div class="whoCard"><h3>🌍 График ВОЗ</h3>${whoChartHtml("weight")}</div></div>
-    <div class="twoCol"><div class="card"><h3>🦷 Зубы в виде схемы</h3>${toothSchemaHtml()}</div><div class="card"><h3>🤒 Болезни</h3>${illnessesHomeHtml()}</div></div>
-    <div class="twoCol"><div class="card"><h3>Прогресс по категориям</h3>${categoryProgressHtml()}</div><div class="card"><h3>Последние записи</h3>${latestEntriesHtml()}</div></div>
-    <div class="card"><h3>PDF и резервные копии</h3>${pdfBackupToolsHtml()}</div>`;
+  const lastIll=latestIllness();
+  const illText=lastIll?.startDate && (!lastIll.endDate || String(lastIll.endDate)>=today()) ? "есть запись" : "нет активных";
+  return `<div class="childHeroCard"><p class="eyebrow">Сегодня</p><h2>${esc(feeding.child?.name||"Марк")} • ${esc(babyAgeLabel(today()))}</h2><p class="muted">Короткая сводка без лишних графиков. Полные данные находятся внутри разделов «Марк», «Календарь» и «Накопления».</p><div class="childFacts"><div class="childFact"><span>Вес</span><b>${growth?.weight?esc(growth.weight)+" кг":"—"}</b></div><div class="childFact"><span>Рост</span><b>${growth?.height?esc(growth.height)+" см":"—"}</b></div><div class="childFact"><span>Зубы</span><b>${teethCount()}</b></div><div class="childFact"><span>Болезни</span><b>${illText}</b></div></div><div class="todayGrid" style="margin-top:12px"><div class="todayCard"><span>День прикорма</span><b>${latestPlanDay()}</b></div><div class="todayCard"><span>Последний продукт</span><b>${esc(lastProduct?.product||"—")}</b></div><div class="todayCard"><span>Ближайшее событие</span><b>${nextEvent?esc(nextEvent.title||eventTypeLabel(nextEvent.type)):"—"}</b></div><div class="todayCard"><span>Продуктов введено</span><b>${st.introduced}/${st.total}</b></div></div></div>`;
+}
+function homeQuickActionsHtml(){
+  return `<div class="homeSectionTitle"><h3>⚡ Быстрые действия</h3><span class="badge">то, что нужно чаще всего</span></div>
+  <div class="quickActionsGrid">
+    <button class="quickActionCard" data-quick-go="feeding-entry"><b>➕</b><span>Добавить прикорм</span></button>
+    <button class="quickActionCard" data-quick-go="feeding-development"><b>📏</b><span>Рост / вес</span></button>
+    <button class="quickActionCard" data-quick-go="feeding-development"><b>🦷</b><span>Отметить зуб</span></button>
+    <button class="quickActionCard" data-quick-go="family-calendar"><b>📅</b><span>Событие</span></button>
+    <button class="quickActionCard" data-quick-go="savings-add"><b>🏦</b><span>Пополнение</span></button>
+    <button class="quickActionCard" data-quick-go="savings-goals"><b>🎯</b><span>Цели</span></button>
+    <button class="quickActionCard" data-quick-go="savings-report"><b>📄</b><span>Отчёт</span></button>
+    <button class="quickActionCard" data-quick-go="family-backups"><b>☁️</b><span>Резерв</span></button>
+  </div>`;
+}
+function homeEventsMiniHtml(){
+  const events=upcomingEvents(3);
+  return `<div class="card"><div class="sectionHead" style="margin:0 0 10px"><div><p class="eyebrow">Календарь</p><h3>Ближайшие события</h3></div><button class="btn" type="button" data-quick-go="family-calendar">Открыть</button></div><div class="familyEventList">${events.map(eventCardHtml).join("") || `<p class="muted">Пока нет будущих событий.</p>`}</div></div>`;
+}
+function homeMarkMiniHtml(){
+  const g=latestGrowth();
+  const ill=latestIllness();
+  return `<div class="card"><div class="sectionHead" style="margin:0 0 10px"><div><p class="eyebrow">Марк</p><h3>Карточка развития</h3></div><button class="btn" type="button" data-quick-go="feeding-development">Открыть</button></div>
+    <div class="dashboardPanel" style="grid-template-columns:repeat(2,1fr)">
+      <div class="dashboardTile"><span>Рост</span><b>${g?.height?esc(g.height)+" см":"—"}</b><em>последний замер</em></div>
+      <div class="dashboardTile"><span>Вес</span><b>${g?.weight?esc(g.weight)+" кг":"—"}</b><em>последний замер</em></div>
+      <div class="dashboardTile"><span>Зубы</span><b>${teethCount()}</b><em>отмечено</em></div>
+      <div class="dashboardTile"><span>Болезни</span><b>${ill?.startDate?esc(fmtDate(ill.startDate)):"—"}</b><em>последняя запись</em></div>
+    </div></div>`;
+}
+function homeSavingsMiniHtml(){
+  normalizeSavings();
+  const ss=savingsSummary();
+  const goals=(savings.goals||[]).slice(0,3);
+  return `<div class="card"><div class="sectionHead" style="margin:0 0 10px"><div><p class="eyebrow">Накопления</p><h3>Краткий прогресс</h3></div><button class="btn" type="button" data-quick-go="savings-home">Открыть</button></div>
+    <div class="dashboardPanel" style="grid-template-columns:repeat(2,1fr)">
+      <div class="dashboardTile"><span>Всего</span><b>${fmtMoney(ss.total)}</b><em>${Math.round(ss.pct)}% цели</em></div>
+      <div class="dashboardTile"><span>Прогноз</span><b>${esc(ss.forecast)}</b><em>по среднему темпу</em></div>
+    </div>
+    <div class="statsList">${goals.map(g=>`<div class="line"><span class="label">${esc(g.name)}</span><span class="value">${Math.round(goalPct(g))}%</span></div>`).join("") || `<p class="muted">Цели ещё не добавлены</p>`}</div>
+  </div>`;
+}
+function homeOverviewHtml(st){
+  return `<div class="sectionHead"><div><p class="eyebrow">MyBase v8</p><h2>Главная</h2></div><span class="badge">${esc(today())}</span></div>
+    <div class="homeHeroGrid">${todayHomeCardHtml(st)}${smartAssistantHtml()}</div>
+    ${homeQuickActionsHtml()}
+    <div class="twoCol">${homeMarkMiniHtml()}${homeSavingsMiniHtml()}</div>
+    ${homeEventsMiniHtml()}`;
 }
 
 function renderFeeding(){
   normalizeFeedingExtras();
   const st=feedingStats();
   $("#feeding-home").innerHTML = homeOverviewHtml(st);
-  bindPdfBackupTools();
   renderFeedingProducts(); renderFeedingEntry(); renderFeedingCalendar(); renderFeedingHistory(); renderFeedingProductStats(); renderFeedingDevelopment(); renderFeedingControl(); renderFeedingAdd(); renderFeedingData();
 }
 
@@ -6525,8 +6601,8 @@ function familyEventsForDate(date){ return eventsList().filter(e=>String(e.date|
 function renderFamilyHome(){
   const events=upcomingEvents(8);
   const g=latestGrowth();
-  $("#family-home").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Семейный календарь</p><h2>Ближайшие события</h2></div><button class="btn btnPrimary" id="goFamilyCalendar">Открыть календарь</button></div><div class="homeHeroGrid"><div class="childHeroCard"><p class="eyebrow">Семья</p><h2>Все важные даты в одном месте</h2><p class="muted">Врачи, документы, прививки, семейные события, развитие Марка и напоминания.</p><div class="childFacts"><div class="childFact"><span>Событий</span><b>${eventsList().length}</b></div><div class="childFact"><span>Ближайшие</span><b>${events.length}</b></div><div class="childFact"><span>Возраст</span><b>${esc(babyAgeLabel(today()))}</b></div><div class="childFact"><span>Последний вес</span><b>${g?.weight?esc(g.weight)+" кг":"—"}</b></div></div></div>${smartAssistantHtml()}</div><div class="card"><h3>Ближайшие события</h3><div class="familyEventList">${events.map(eventCardHtml).join("") || `<p class="muted">Пока нет будущих событий.</p>`}</div></div><div class="card"><h3>PDF и резервные копии</h3>${pdfBackupToolsHtml()}</div>`;
-  $("#goFamilyCalendar").onclick=()=>{familyPanel="family-calendar"; renderAll();}; bindPdfBackupTools();
+  $("#family-home").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Семья</p><h2>Обзор календаря</h2></div><button class="btn btnPrimary" id="goFamilyCalendar">Открыть календарь</button></div><div class="homeHeroGrid"><div class="childHeroCard"><p class="eyebrow">Семейный календарь</p><h2>Все важные даты в одном месте</h2><p class="muted">Врачи, документы, прививки, семейные события и напоминания. PDF и резервные копии перенесены в раздел «Ещё».</p><div class="childFacts"><div class="childFact"><span>Событий</span><b>${eventsList().length}</b></div><div class="childFact"><span>Ближайшие</span><b>${events.length}</b></div><div class="childFact"><span>Возраст</span><b>${esc(babyAgeLabel(today()))}</b></div><div class="childFact"><span>Последний вес</span><b>${g?.weight?esc(g.weight)+" кг":"—"}</b></div></div></div>${smartAssistantHtml()}</div><div class="card"><h3>Ближайшие события</h3><div class="familyEventList">${events.map(eventCardHtml).join("") || `<p class="muted">Пока нет будущих событий.</p>`}</div></div>`;
+  $("#goFamilyCalendar").onclick=()=>{familyPanel="family-calendar"; renderAll();};
 }
 function eventCardHtml(e){ return `<div class="familyEvent"><div class="familyEventIcon">${eventTypeIcon(e.type)}</div><div style="flex:1"><span class="eventTypeBadge ${eventTypeClass(e.type)}">${esc(eventTypeLabel(e.type))}</span><h3 style="margin-top:8px">${esc(e.title||"Событие")}</h3><p class="muted small">${esc(fmtDate(e.date))}${e.time?` • ${esc(e.time)}`:""}</p>${e.note?`<p class="muted small">${esc(e.note)}</p>`:""}</div><button class="btn btnDanger" data-del-family-event="${esc(e.id||"")}">Удалить</button></div>`; }
 function renderFamilyCalendar(){
@@ -6552,7 +6628,7 @@ function renderFamilyCalendar(){
   $$('[data-del-family-event]').forEach(btn=>btn.onclick=async()=>{ if(!confirm("Удалить событие?")) return; feeding.familyEvents=eventsList().filter(e=>String(e.id)!==String(btn.dataset.delFamilyEvent)); await saveFeeding(); renderAll(); });
 }
 function renderFamilyBackups(){
-  $("#family-backups").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Экспорт</p><h2>PDF и резервные копии</h2></div></div><div class="card">${pdfBackupToolsHtml()}</div>`;
+  $("#family-backups").innerHTML=`<div class="sectionHead"><div><p class="eyebrow">Ещё</p><h2>Отчёты, безопасность и резерв</h2></div></div><div class="card">${pdfBackupToolsHtml()}</div>`;
   bindPdfBackupTools();
 }
 
