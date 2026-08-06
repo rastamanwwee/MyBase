@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>MyBase v10</title>
+  <title>MyBase v13</title>
   <meta name="theme-color" content="#5da790" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -81,6 +81,8 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 
 .appModeCard,.globalSearchCard,.trashCard,.auditCard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;margin:10px 0}.globalSearchResults{display:grid;gap:10px;margin-top:12px}.searchHit{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px}.searchHit h3{margin:5px 0}.searchHit small{color:var(--muted);font-weight:800}.trashGrid,.auditGrid{display:grid;gap:10px}.trashItem,.auditItem{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.auditItem{display:block}.auditMeta{font-size:11px;color:var(--muted);font-weight:800;margin-top:4px}.quickTodayGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.quickTodayCard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px}.quickTodayCard b{display:block;font-size:20px;margin-top:5px}.installHint{background:linear-gradient(135deg,#fffefa,#eaf6f1);border:1px solid rgba(93,167,144,.25);border-radius:20px;padding:14px;margin-top:10px}.installSteps{margin:8px 0 0;padding-left:18px;color:var(--muted);line-height:1.45}.offlinePill{display:inline-flex;border-radius:999px;background:var(--soft);color:var(--brand2);font-size:12px;font-weight:900;padding:6px 10px}@media(max-width:760px){.quickTodayGrid{grid-template-columns:1fr}.trashItem{display:grid}}
 
+.entryModeSwitch{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}.entryModeBtn{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:11px 15px;font-weight:950}.entryModeBtn.active{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-color:transparent;box-shadow:0 10px 22px rgba(47,120,104,.2)}.batchPickerBox{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,#fff,#f5fbf8)}.batchSelectedList{display:grid;gap:10px;margin-top:12px}.batchProductRow{display:grid;grid-template-columns:minmax(150px,1.25fr) minmax(145px,1fr) minmax(125px,.8fr) minmax(145px,.9fr) auto;gap:10px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px}.batchProductMain{align-self:center}.batchProductMain b{display:block;font-size:17px}.batchProductMain small{display:block;color:var(--muted);font-weight:800;line-height:1.35;margin-top:4px}.batchPortionStack{display:grid;gap:6px}.batchRemoveBtn{border:0;border-radius:999px;background:#ffe8e6;color:#b94a43;font-weight:950;padding:10px 12px;white-space:nowrap}.batchSummary{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}.batchCount{display:inline-flex;border-radius:999px;background:var(--soft);color:var(--brand2);font-weight:950;padding:7px 11px}.batchCommonTitle{margin:18px 0 10px}.batchSubmitBtn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}.batchHint{background:#fff8ec;border:1px solid rgba(214,159,43,.25);border-radius:16px;padding:11px 12px;color:#785111;font-size:13px;line-height:1.4;margin-top:12px}@media(max-width:900px){.batchProductRow{grid-template-columns:1fr 1fr}.batchProductMain{grid-column:span 2}.batchRemoveBtn{width:100%}}@media(max-width:560px){.batchProductRow{grid-template-columns:1fr}.batchProductMain{grid-column:auto}.entryModeSwitch{display:grid;grid-template-columns:1fr 1fr}.entryModeBtn{padding:11px 8px}}
+
   </style>
 </head>
 <body>
@@ -112,7 +114,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
         <div>
           <p class="eyebrow">Личный семейный сайт</p>
           <h1>Mark Tracker</h1>
-          <p class="sub">Выбери трекер на главной странице: прикорм Марка или накопления.</p><p class="muted small">Версия: MyBase v7</p>
+          <p class="sub">Выбери трекер на главной странице: прикорм Марка или накопления.</p><p class="muted small">Версия: MyBase v13</p>
         </div>
         <div class="userBox">
           <span class="muted" id="userEmail">—</span>
@@ -5487,11 +5489,12 @@ let familyPanel = "family-home";
 let familyCalendarMonth = "";
 let familyCalendarSelectedDate = "";
 let editingFeedingEntryId = "";
+let feedingEntryAddMode = "single";
 let feedingCalendarMonth = "";
 let feedingCalendarSelectedDate = "";
 let feedingEntryPrefillDate = "";
 let authMode = "login";
-const APP_VERSION = "MyBase v12 App Mode";
+const APP_VERSION = "MyBase v13 Batch Entry";
 const DATA_VERSION = "1.2";
 let diagnosticsLog = [];
 let lastSelfCheck = null;
@@ -6446,11 +6449,116 @@ function setMonthOffset(month,offset){ const [y,m]=String(month||today().slice(0
 function entriesForDate(date){ return (feeding.entries||[]).filter(e=>String(e.date||"")===String(date||"")); }
 function calendarInitialMonth(){ const latest=(feeding.entries||[]).map(e=>e.date).filter(Boolean).sort().at(-1); return (latest||today()).slice(0,7); }
 
+function setupBatchEntryForm(form, portions){
+  if(!form) return;
+  const search=$("#batchProductSearch"), suggestions=$("#batchProductSuggestions"), selectedBox=$("#batchSelectedProducts"), countBox=$("#batchSelectedCount"), submitBtn=$("#batchSubmitBtn");
+  const selected=new Map();
+  const keyFor=p=>String(p?.id||`${p?.name||""}::${p?.category||""}`);
+  const optionHtml=(list,selectedValue)=>list.map(v=>`<option value="${esc(v)}" ${String(v)===String(selectedValue)?"selected":""}>${esc(v)}</option>`).join("");
+
+  const drawSelected=()=>{
+    const items=[...selected.values()];
+    if(countBox) countBox.textContent=String(items.length);
+    if(submitBtn){ submitBtn.disabled=!items.length; submitBtn.textContent=items.length ? `Сохранить продукты (${items.length})` : "Выбери продукты"; }
+    selectedBox.innerHTML=items.length ? items.map((item,index)=>{
+      const p=item.product;
+      return `<div class="batchProductRow" data-batch-row="${index}">
+        <div class="batchProductMain"><b>${esc(p.name||"")}</b><small>${esc(p.category||"Без категории")}${p.allergen?` • аллерген: ${esc(p.allergenType||"да")}`:""}</small></div>
+        <label>Сколько покушал<div class="batchPortionStack"><select data-batch-portion>${optionHtml(portions,item.portion)}</select><input data-batch-custom-portion placeholder="Или своя порция" value="${esc(item.customPortion||"")}"></div></label>
+        <label>Статус<select data-batch-status>${optionHtml(statuses(),item.status)}</select></label>
+        <label>Реакция<select data-batch-reaction>${optionHtml(reactions(),item.reaction)}</select></label>
+        <button class="batchRemoveBtn" type="button" data-batch-remove="${index}">Убрать</button>
+      </div>`;
+    }).join("") : emptyState("🥣","Продукты ещё не выбраны","Найди продукты выше и добавь их в общий приём пищи.");
+
+    $$('[data-batch-row]',selectedBox).forEach(row=>{
+      const item=items[n(row.dataset.batchRow)];
+      if(!item) return;
+      const portion=row.querySelector('[data-batch-portion]');
+      const custom=row.querySelector('[data-batch-custom-portion]');
+      const status=row.querySelector('[data-batch-status]');
+      const reaction=row.querySelector('[data-batch-reaction]');
+      if(portion) portion.onchange=()=>item.portion=portion.value;
+      if(custom) custom.oninput=()=>item.customPortion=custom.value;
+      if(status) status.onchange=()=>item.status=status.value;
+      if(reaction) reaction.onchange=()=>item.reaction=reaction.value;
+    });
+    $$('[data-batch-remove]',selectedBox).forEach(btn=>btn.onclick=()=>{
+      const item=items[n(btn.dataset.batchRemove)];
+      if(item) selected.delete(keyFor(item.product));
+      drawSelected(); drawSuggestions();
+    });
+  };
+
+  const drawSuggestions=()=>{
+    const q=normalizeSearch(search?.value||"");
+    let matches=sortedProducts().filter(p=>productMatchesQuery(p,q) && !selected.has(keyFor(p)));
+    if(!q){
+      const recent=recentProducts(10);
+      const recentKeys=new Set(recent.map(keyFor));
+      matches=[...recent,...matches.filter(p=>!recentKeys.has(keyFor(p)))];
+    }
+    matches=matches.slice(0,16);
+    suggestions.innerHTML=matches.map((p,index)=>{
+      const status=suggestedEntryStatus(p,form.date?.value||today());
+      return `<button class="suggestion" type="button" data-batch-suggestion-index="${index}"><span><b>${highlightText(p.name,q)}</b><br><small>${esc(p.category||"")} • ${status==="Введён"?"новый":"повтор"}</small></span>${p.allergen?`<span class="badge warn">${esc(p.allergenType||"аллерген")}</span>`:""}</button>`;
+    }).join("") || `<p class="muted small">Нет подходящих продуктов или все найденные уже выбраны.</p>`;
+    $$('[data-batch-suggestion-index]',suggestions).forEach(btn=>btn.onclick=()=>{
+      const p=matches[n(btn.dataset.batchSuggestionIndex)];
+      if(!p) return;
+      selected.set(keyFor(p),{product:p,portion:portions[0]||"",customPortion:"",status:suggestedEntryStatus(p,form.date?.value||today()),reaction:"Нет реакции"});
+      if(search) search.value="";
+      drawSelected(); drawSuggestions();
+    });
+  };
+
+  if(search){ search.oninput=drawSuggestions; search.onfocus=drawSuggestions; }
+  syncEntryAutoAge(form);
+  if(form.date) form.date.onchange=()=>{
+    syncEntryAutoAge(form);
+    selected.forEach(item=>item.status=suggestedEntryStatus(item.product,form.date.value||today()));
+    drawSelected(); drawSuggestions();
+  };
+
+  form.onsubmit=async e=>{
+    e.preventDefault();
+    const items=[...selected.values()];
+    if(!items.length){ toast("Выбери хотя бы один продукт"); return; }
+    const fd=new FormData(form);
+    const date=fd.get("date")||today();
+    const plannedDay=n(fd.get("planDay"))||nextFeedingPlanDay();
+    const age=fd.get("age")||babyAgeLabel(date);
+    const meal=fd.get("meal")||"Утро";
+    const baseNumber=(feeding.entries||[]).length;
+    const stamp=Date.now();
+    const common={date,planDay:plannedDay,age,meal,reactionDescription:fd.get("reactionDescription")||"",stool:fd.get("stool")||"",skin:fd.get("skin")||"",sleepMood:fd.get("sleepMood")||"",notes:fd.get("notes")||""};
+    const entries=items.map((item,index)=>{
+      const p=item.product;
+      const custom=String(item.customPortion||"").trim();
+      const portion=custom||item.portion||"";
+      if(custom){
+        if(!Array.isArray(feeding.portions)) feeding.portions=[];
+        if(!feeding.portions.includes(custom)) feeding.portions.push(custom);
+      }
+      return {id:`e${stamp}_${index}`,number:baseNumber+index+1,...common,category:p.category||"",product:p.name||"",productId:p.id||"",allergen:!!p.allergen,allergenType:p.allergenType||"",portion,reaction:item.reaction||"Нет реакции",status:item.status||suggestedEntryStatus(p,date)};
+    });
+    feeding.entries.unshift(...entries);
+    items.forEach(item=>{ if(isStatusIntroduced(item.status)) item.product.status="Введён"; });
+    feedingEntryPrefillDate="";
+    await saveFeeding();
+    toast(`${entries.length} продуктов сохранено за день ${plannedDay}`);
+    renderAll();
+  };
+
+  drawSelected(); drawSuggestions();
+}
+
 function renderFeedingEntry(){
   const portions=portionOptions();
   const meals=mealOptions();
   let editingEntry=editingFeedingEntryId ? (feeding.entries||[]).find(e=>String(e.id||"")===String(editingFeedingEntryId)) : null;
   if(editingFeedingEntryId && !editingEntry){ editingFeedingEntryId=""; editingEntry=null; }
+  if(editingEntry) feedingEntryAddMode="single";
   const ages=[...new Set([...ageOptions(), babyAgeLabel((editingEntry?.date || feedingEntryPrefillDate || today()))])];
   const prefillExistingDay=feedingEntryPrefillDate ? entriesForDate(feedingEntryPrefillDate)[0] : null;
   const formDate=editingEntry?.date || feedingEntryPrefillDate || today();
@@ -6467,11 +6575,36 @@ function renderFeedingEntry(){
   const dayFilterOptions=entryDayOptionsHtml();
   const mealFilterOptions=[`<option value="all">Все</option>`, ...meals.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`)].join("");
   const ageFilterOptions=[`<option value="all">Все</option>`, ...ages.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`)].join("");
+  const batchFormHtml = !editingEntry ? `<div id="batchEntryMode" class="${feedingEntryAddMode==="batch"?"":"hidden"}">
+    <form class="card" id="batchEntryForm">
+      <div class="formGrid">
+        <label>Дата<input name="date" type="date" required value="${esc(formDate)}"></label><label>День плана<input name="planDay" type="number" min="1" value="${esc(formDay)}"></label>
+        <label>Возраст ребёнка<select name="age">${opts(ages, formAge)}</select></label><label>Приём пищи<select name="meal">${opts(meals, formMeal)}</select></label>
+      </div>
+      <div class="batchPickerBox">
+        <h3 style="margin:0 0 6px">Выбери несколько продуктов</h3>
+        <p class="muted small" style="margin-top:0">Дата, день, возраст и приём пищи применятся ко всем выбранным продуктам.</p>
+        <div class="productSearchBox"><input id="batchProductSearch" type="search" autocomplete="off" placeholder="Начни вводить название продукта"><div class="suggestions" id="batchProductSuggestions"></div></div>
+        <div class="batchSummary"><b>Выбранные продукты</b><span class="batchCount">Количество: <span id="batchSelectedCount">0</span></span></div>
+        <div class="batchSelectedList" id="batchSelectedProducts"></div>
+        <div class="batchHint">Для каждого продукта можно отдельно выбрать порцию, статус и реакцию. Общие данные ниже сохранятся для всех продуктов.</div>
+      </div>
+      <h3 class="batchCommonTitle">Общие данные приёма пищи</h3>
+      <div class="formGrid">
+        <label>Стул<input name="stool" placeholder="Норма / запор / жидкий"></label><label>Кожа<input name="skin" placeholder="Без изменений / сыпь"></label>
+        <label>Сон/настроение<input name="sleepMood" placeholder="Спокойно / капризничал"></label><label>Описание реакции<input name="reactionDescription" placeholder="Общее описание, если нужно"></label>
+        <label class="span2">Заметки<textarea name="notes" placeholder="Общая заметка для этого приёма пищи"></textarea></label>
+      </div>
+      <div class="editActions"><button class="btn btnPrimary batchSubmitBtn" id="batchSubmitBtn" type="submit" disabled>Выбери продукты</button></div>
+    </form>
+  </div>` : "";
   $("#feeding-entry").innerHTML = `
     <div class="sectionHead"><div><p class="eyebrow">Ежедневный ввод</p><h2>Ввод прикорма</h2></div></div>
     ${editingEntry?`<div class="card editingBanner"><b>Редактирование записи</b><p class="muted small">Сейчас меняешь: ${esc(editingEntry.product||"запись")} ${editingEntry.planDay?"• день "+esc(editingEntry.planDay):""}. После сохранения старая запись обновится, новая не добавится.</p></div>`:""}
     ${feedingEntryPrefillDate && !editingEntry?`<div class="card editingBanner"><b>Дата из календаря</b><p class="muted small">Новая запись будет добавлена на ${esc(feedingEntryPrefillDate)}. Дату можно изменить вручную.</p></div>`:""}
-    <form class="card" id="entryForm"><div class="formGrid">
+    ${!editingEntry?`<div class="entryModeSwitch"><button class="entryModeBtn ${feedingEntryAddMode==="single"?"active":""}" type="button" data-entry-add-mode="single">Один продукт</button><button class="entryModeBtn ${feedingEntryAddMode==="batch"?"active":""}" type="button" data-entry-add-mode="batch">Несколько продуктов</button></div>`:""}
+    ${batchFormHtml}
+    <div id="singleEntryMode" class="${feedingEntryAddMode==="single"||editingEntry?"":"hidden"}"><form class="card" id="entryForm"><div class="formGrid">
       <label>Дата<input name="date" type="date" required value="${esc(formDate)}"></label><label>День плана<input name="planDay" type="number" min="1" value="${esc(formDay)}"></label>
       <label>Возраст ребёнка<select name="age">${opts(ages, formAge)}</select></label><label>Приём пищи<select name="meal">${opts(meals, formMeal)}</select></label>
       <label>Статус<select name="status">${opts(statuses(), formStatus)}</select></label><label>Категория<select name="category">${opts(categories(), formCategory)}</select></label>
@@ -6481,10 +6614,18 @@ function renderFeedingEntry(){
       <label class="span2">Добавить свою порцию<div class="portionTools"><input id="portionCustom" name="portionCustom" placeholder="Например: 3 кусочка / 30 г / 2 ложки"><button class="btn" type="button" id="addPortionBtn">+ Добавить</button></div></label>
       <label>Сон/настроение<input name="sleepMood" placeholder="Спокойно / капризничал" value="${esc(editingEntry?.sleepMood||"")}"></label><label>Описание реакции<input name="reactionDescription" placeholder="Если была реакция" value="${esc(editingEntry?.reactionDescription||"")}"></label>
       <label class="span2">Заметки<textarea name="notes">${esc(editingEntry?.notes||"")}</textarea></label>
-    </div><div class="editActions"><button class="btn btnPrimary" type="submit">${editingEntry?"Сохранить изменения":"Сохранить запись"}</button>${editingEntry?`<button class="btn" type="button" id="cancelEditEntryBtn">Отменить редактирование</button>`:""}</div></form>
+    </div><div class="editActions"><button class="btn btnPrimary" type="submit">${editingEntry?"Сохранить изменения":"Сохранить запись"}</button>${editingEntry?`<button class="btn" type="button" id="cancelEditEntryBtn">Отменить редактирование</button>`:""}</div></form></div>
     <div class="card"><h3>История ввода</h3><p class="muted small">Нажми «Редактировать», чтобы изменить дату, день, приём пищи, продукт, порцию, реакцию или статус.</p><div class="compactFilters"><label>Поиск<input id="entrySearch" type="search" placeholder="продукт, реакция, порция"></label><label>День<select id="entryDayFilter">${dayFilterOptions}</select></label><label>Возраст<select id="entryAgeFilter">${ageFilterOptions}</select></label><label>Приём<select id="entryMealFilter">${mealFilterOptions}</select></label><label>Статус<select id="entryStatusFilter"><option value="all">Все</option><option value="Введён">Введён</option><option value="Повтор">Повтор</option><option value="Пауза">Пауза</option><option value="Не подошёл">Не подошёл</option><option value="reaction">С реакцией</option></select></label></div><div class="entryCards" id="entryRows"></div></div>`;
   const form=$("#entryForm");
   setupEntryProductSearch(form, editingEntry);
+  const batchForm=$("#batchEntryForm");
+  if(batchForm) setupBatchEntryForm(batchForm, portions);
+  $$('[data-entry-add-mode]').forEach(btn=>btn.onclick=()=>{
+    feedingEntryAddMode=btn.dataset.entryAddMode==="batch"?"batch":"single";
+    $("#singleEntryMode")?.classList.toggle("hidden",feedingEntryAddMode!=="single");
+    $("#batchEntryMode")?.classList.toggle("hidden",feedingEntryAddMode!=="batch");
+    $$('[data-entry-add-mode]').forEach(x=>x.classList.toggle("active",x.dataset.entryAddMode===feedingEntryAddMode));
+  });
   if($("#cancelEditEntryBtn")) $("#cancelEditEntryBtn").onclick=()=>{ editingFeedingEntryId=""; renderFeedingEntry(); };
   $("#addPortionBtn").onclick=async()=>{
     const val=($("#portionCustom").value||"").trim();
