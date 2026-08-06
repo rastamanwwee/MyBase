@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>MyBase v13</title>
+  <title>MyBase v13.1</title>
   <meta name="theme-color" content="#5da790" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -114,7 +114,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
         <div>
           <p class="eyebrow">Личный семейный сайт</p>
           <h1>Mark Tracker</h1>
-          <p class="sub">Выбери трекер на главной странице: прикорм Марка или накопления.</p><p class="muted small">Версия: MyBase v13</p>
+          <p class="sub">Выбери трекер на главной странице: прикорм Марка или накопления.</p><p class="muted small">Версия: MyBase v13.1</p>
         </div>
         <div class="userBox">
           <span class="muted" id="userEmail">—</span>
@@ -212,7 +212,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
   <nav id="bottomNav" class="bottomNav hidden"></nav>
   <div id="toast" class="toast"></div>
   <script type="module">
-let initializeApp, getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut;
+let initializeApp, getAuth, initializeAuth, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut;
 let getFirestore, doc, getDoc, setDoc, serverTimestamp;
 
 async function loadFirebaseSdk(){
@@ -225,6 +225,10 @@ async function loadFirebaseSdk(){
     ]);
     initializeApp = appMod.initializeApp;
     getAuth = authMod.getAuth;
+    initializeAuth = authMod.initializeAuth;
+    browserLocalPersistence = authMod.browserLocalPersistence;
+    browserSessionPersistence = authMod.browserSessionPersistence;
+    inMemoryPersistence = authMod.inMemoryPersistence;
     onAuthStateChanged = authMod.onAuthStateChanged;
     signInWithEmailAndPassword = authMod.signInWithEmailAndPassword;
     createUserWithEmailAndPassword = authMod.createUserWithEmailAndPassword;
@@ -238,6 +242,33 @@ async function loadFirebaseSdk(){
   }catch(err){
     throw new Error("Firebase SDK не загрузился. Проверь интернет или обнови страницу. " + (err?.message || err));
   }
+}
+
+function createAuthInstance(firebaseApp){
+  if(auth) return auth;
+  try{
+    if(initializeAuth){
+      return initializeAuth(firebaseApp, {
+        persistence: [browserLocalPersistence, browserSessionPersistence, inMemoryPersistence].filter(Boolean)
+      });
+    }
+  }catch(err){
+    const code=String(err?.code||"");
+    if(!code.includes("already-initialized")) throw err;
+  }
+  return getAuth(firebaseApp);
+}
+
+function isLocalPreview(){
+  return ["file:","blob:","data:"].includes(location.protocol);
+}
+
+function showLaunchWarning(){
+  if(!isLocalPreview()) return;
+  const box=$("#firebaseWarning");
+  if(!box) return;
+  box.innerHTML='<b>Файл открыт в режиме предпросмотра.</b><br>Для входа в существующий аккаунт загрузи этот файл на тот же адрес сайта и открой опубликованную страницу. В приложении «Файлы» или в предпросмотре ChatGPT авторизация Firebase может не работать.';
+  box.classList.remove("hidden");
 }
 
 // Firebase config уже вставлен для проекта MyBase.
@@ -5494,7 +5525,7 @@ let feedingCalendarMonth = "";
 let feedingCalendarSelectedDate = "";
 let feedingEntryPrefillDate = "";
 let authMode = "login";
-const APP_VERSION = "MyBase v13 Batch Entry";
+const APP_VERSION = "MyBase v13.1 Batch Entry + Auth Fix";
 const DATA_VERSION = "1.2";
 let diagnosticsLog = [];
 let lastSelfCheck = null;
@@ -5698,7 +5729,9 @@ function friendlyAuthError(err){
   if(code.includes("user-not-found")) return "Аккаунт с таким email не найден.";
   if(code.includes("too-many-requests")) return "Слишком много попыток. Подожди немного и попробуй снова.";
   if(code.includes("network-request-failed")) return "Нет соединения с Firebase. Проверь интернет и обнови страницу.";
-  if(code.includes("unauthorized-domain")) return "Этот домен не добавлен в Firebase Auth. Нужно добавить rastamanwwee.github.io в Authorized domains.";
+  if(code.includes("web-storage-unsupported") || code.includes("unsupported-persistence")) return "Браузер запретил хранилище входа. Открой опубликованный сайт в Safari, а не файл из предпросмотра.";
+  if(code.includes("unauthorized-domain") || code.includes("app-not-authorized") || code.includes("requests-from-referer")) return "Адрес, с которого открыт сайт, не разрешён в Firebase. Открой сайт по его обычной опубликованной ссылке или добавь этот домен в Firebase Authentication → Settings → Authorized domains.";
+  if(code.includes("invalid-api-key")) return "Firebase API key не принят. Проверь настройки проекта Firebase.";
   if(code.includes("operation-not-allowed")) return "В Firebase не включён вход по Email/Password.";
   if(code.includes("invalid-email")) return "Email введён неправильно.";
   if(code.includes("missing-password")) return "Введи пароль.";
@@ -5752,6 +5785,7 @@ function showApp(){
 async function init(){
   initPwaMode();
   showAuth();
+  showLaunchWarning();
   bindNavigation();
 
   if(isConfigMissing){
@@ -5764,7 +5798,7 @@ async function init(){
   try{
     await loadFirebaseSdk();
     app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
+    auth = createAuthInstance(app);
     db = getFirestore(app);
     bindAuth();
     onAuthStateChanged(auth, async (user) => {
@@ -5777,11 +5811,13 @@ async function init(){
   }
 }
 
+let authHandlersBound = false;
 function bindAuth(){
   const form = $("#authForm");
   const emailEl = $("#email");
   const passEl = $("#password");
-  if(!form) return;
+  if(!form || authHandlersBound) return;
+  authHandlersBound = true;
 
   form.addEventListener("click", e => {
     const btn = e.target.closest("button[data-auth]");
@@ -5804,7 +5840,7 @@ function bindAuth(){
       try{
         await loadFirebaseSdk();
         app = app || initializeApp(firebaseConfig);
-        auth = auth || getAuth(app);
+        auth = auth || createAuthInstance(app);
         db = db || getFirestore(app);
       }catch(err){
         return showAuthError(friendlyAuthError(err), err);
@@ -5835,7 +5871,7 @@ function bindAuth(){
       try{
         await loadFirebaseSdk();
         app = app || initializeApp(firebaseConfig);
-        auth = auth || getAuth(app);
+        auth = auth || createAuthInstance(app);
       }catch(err){
         return showAuthError(friendlyAuthError(err), err);
       }
