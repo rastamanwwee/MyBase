@@ -5551,7 +5551,7 @@ let feedingCalendarMonth = "";
 let feedingCalendarSelectedDate = "";
 let feedingEntryPrefillDate = "";
 let authMode = "login";
-const APP_VERSION = "MyBase v15 AI v2";
+const APP_VERSION = "MyBase v15.1 AI v2 Safe Data";
 const DATA_VERSION = "1.3";
 let diagnosticsLog = [];
 let lastSelfCheck = null;
@@ -5702,8 +5702,17 @@ function normalizeFeedingEntryMeta(){
   return changed;
 }
 
+let firebaseDataReady = false;
+let firebaseSeeding = false;
+
 async function saveFeeding(){
   if(!uid || !db){ logDiag("warn","Сохранение прикорма пропущено: нет входа или Firebase",null,"saveFeeding"); return; }
+  if(!firebaseDataReady && !firebaseSeeding){
+    const err = new Error("Сохранение заблокировано: данные Firebase ещё не были успешно загружены.");
+    logDiag("error",err.message,err,"saveFeedingBlocked");
+    toast("Сохранение заблокировано: сначала нужно загрузить данные Firebase");
+    throw err;
+  }
   try{
     normalizeFeedingExtras();
     await setDoc(doc(db,"users",uid,"feeding","state"), {...feeding, updatedAt: serverTimestamp(), appVersion: APP_VERSION, dataVersion: DATA_VERSION});
@@ -5711,29 +5720,54 @@ async function saveFeeding(){
 }
 async function saveSavings(){
   if(!uid || !db){ logDiag("warn","Сохранение накоплений пропущено: нет входа или Firebase",null,"saveSavings"); return; }
+  if(!firebaseDataReady && !firebaseSeeding){
+    const err = new Error("Сохранение заблокировано: данные Firebase ещё не были успешно загружены.");
+    logDiag("error",err.message,err,"saveSavingsBlocked");
+    toast("Сохранение заблокировано: сначала нужно загрузить данные Firebase");
+    throw err;
+  }
   try{
     normalizeSavings();
     await setDoc(doc(db,"users",uid,"savings","state"), {...savings, updatedAt: serverTimestamp(), appVersion: APP_VERSION, dataVersion: DATA_VERSION});
   }catch(err){ logDiag("error","Не удалось сохранить накопления",err,"saveSavings"); toast("Ошибка сохранения накоплений"); throw err; }
 }
 async function loadUserData(){
+  firebaseDataReady = false;
   try{
-    const fSnap = await getDoc(doc(db,"users",uid,"feeding","state"));
-    if(fSnap.exists()) feeding = {...deep(DEFAULT_FEEDING), ...fSnap.data()}; else { feeding = deep(DEFAULT_FEEDING); await saveFeeding(); }
+    const [fSnap, sSnap] = await Promise.all([
+      getDoc(doc(db,"users",uid,"feeding","state")),
+      getDoc(doc(db,"users",uid,"savings","state"))
+    ]);
+
+    // ВАЖНО: никогда не подменяем ошибку чтения встроенными DEFAULT_* данными.
+    // DEFAULT_* используются только при действительно отсутствующем документе нового аккаунта.
+    if(fSnap.exists()){
+      feeding = {...deep(DEFAULT_FEEDING), ...fSnap.data()};
+    }else{
+      feeding = deep(DEFAULT_FEEDING);
+      firebaseSeeding = true;
+      try{ await saveFeeding(); } finally { firebaseSeeding = false; }
+    }
+
+    if(sSnap.exists()){
+      savings = {...deep(DEFAULT_SAVINGS), ...sSnap.data()};
+    }else{
+      savings = deep(DEFAULT_SAVINGS);
+      firebaseSeeding = true;
+      try{ await saveSavings(); } finally { firebaseSeeding = false; }
+    }
+
+    // Нормализуем только в памяти. На этапе загрузки ничего автоматически
+    // обратно в Firestore не записываем.
+    normalizeFeedingEntryMeta();
+    normalizeFeedingExtras();
+    normalizeSavings();
+    firebaseDataReady = true;
   }catch(err){
-    logDiag("error","Не удалось загрузить прикорм из Firebase. Открываю локальную структуру.",err,"loadFeeding");
-    feeding = {...deep(DEFAULT_FEEDING), ...ensureObject(feeding)};
+    firebaseDataReady = false;
+    logDiag("error","Не удалось загрузить данные из Firebase. Локальные резервные данные НЕ открыты и НЕ сохранены.",err,"loadUserDataSafe");
+    throw err;
   }
-  const feedingMetaChanged = normalizeFeedingEntryMeta();
-  if(feedingMetaChanged){ try{ await saveFeeding(); }catch(_){ } }
-  try{
-    const sSnap = await getDoc(doc(db,"users",uid,"savings","state"));
-    if(sSnap.exists()) savings = {...deep(DEFAULT_SAVINGS), ...sSnap.data()}; else { savings = deep(DEFAULT_SAVINGS); await saveSavings(); }
-  }catch(err){
-    logDiag("error","Не удалось загрузить накопления из Firebase. Открываю локальную структуру.",err,"loadSavings");
-    savings = {...deep(DEFAULT_SAVINGS), ...ensureObject(savings)};
-  }
-  normalizeFeedingExtras(); normalizeSavings();
 }
 
 
@@ -5775,7 +5809,9 @@ async function openAppForUser(user){
       await loadUserData();
     }catch(e){
       console.error("loadUserData failed", e);
-      toast("Ошибка загрузки Firebase, сайт открыт с локальными данными");
+      showAuth();
+      showAuthError("Не удалось загрузить данные из Firebase. Сайт не откроет резервную копию и ничего не перезапишет. Обнови страницу и попробуй снова.", e);
+      return;
     }
     clearAuthError();
     showApp();
