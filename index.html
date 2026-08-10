@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>MyBase v15.4</title>
+  <title>MyBase v15.5</title>
   <meta name="theme-color" content="#5da790" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -226,14 +226,14 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
   <button id="aiFab" class="aiFab hidden" type="button" aria-label="Открыть ИИ-помощника"><b>🤖</b><span>ИИ-помощник</span></button>
   <div id="aiOverlay" class="aiOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
     <section class="aiSheet">
-      <header class="aiHead"><div><div class="eyebrow" style="color:#bfe8d9;margin-bottom:3px">MyBase AI v2</div><h2 id="aiTitle">🤖 ИИ-помощник</h2><p>Добавляй, спрашивай, исправляй и удаляй обычным текстом. Любое изменение сначала показывается для подтверждения.</p></div><button id="aiCloseBtn" class="aiClose" type="button" aria-label="Закрыть">×</button></header>
+      <header class="aiHead"><div><div class="eyebrow" style="color:#bfe8d9;margin-bottom:3px">MyBase AI v3 Safe</div><h2 id="aiTitle">🤖 ИИ-помощник</h2><p>Добавляй, спрашивай и исправляй обычным текстом. ИИ не имеет права удалять данные.</p></div><button id="aiCloseBtn" class="aiClose" type="button" aria-label="Закрыть">×</button></header>
       <div class="aiBody" id="aiBody">
-        <div class="aiWelcome"><b>Теперь помощник умеет читать базу и управлять записями.</b><p class="muted small" style="margin:6px 0 0">Например: «Какие продукты ещё не введены?», «Добавь киви в продукты, ещё не вводили», «Вчера банана было 50 г, а не 30», «Сколько отложено на квартиру?».</p></div>
-        <div class="aiQuickPrompts" id="aiQuickPrompts"><button type="button" data-ai-example="Какие продукты ещё не введены?">🔎 Спросить базу</button><button type="button" data-ai-example="Добавь киви в список продуктов, ещё не вводили">🥝 Новый продукт</button><button type="button" data-ai-example="Сегодня утром Марк ел гречку 70 г и банан 40 г, реакции не было">🥣 Прикорм</button><button type="button" data-ai-example="Вчера я ошибся в записи прикорма: банана было 50 г, а не 30 г">✏️ Исправить</button><button type="button" data-ai-example="Сколько сейчас отложено на квартиру?">💰 Накопления</button><button type="button" data-ai-clear-context="1">🧹 Новый диалог</button></div>
+        <div class="aiWelcome"><b>Безопасный режим: ИИ добавляет записи, но ничего не удаляет.</b><p class="muted small" style="margin:6px 0 0">Если продукта ещё нет, помощник сам добавит его во вкладку «Продукты», а затем сохранит во «Ввод». Перед сохранением всё показывается для проверки.</p></div>
+        <div class="aiQuickPrompts" id="aiQuickPrompts"><button type="button" data-ai-example="Какие продукты ещё не введены?">🔎 Спросить базу</button><button type="button" data-ai-example="Сегодня в обед Марк ел киви 30 г, это новый продукт, реакции не было">🥝 Новый продукт во Ввод</button><button type="button" data-ai-example="Сегодня утром Марк ел гречку 70 г и банан 40 г, реакции не было">🥣 Прикорм</button><button type="button" data-ai-example="Вчера я ошибся в записи прикорма: банана было 50 г, а не 30 г">✏️ Исправить</button><button type="button" data-ai-example="Сколько сейчас отложено на квартиру?">💰 Накопления</button><button type="button" data-ai-clear-context="1">🧹 Новый диалог</button></div>
         <div class="aiMessages" id="aiMessages"></div>
         <div id="aiPreviewHost"></div>
       </div>
-      <footer class="aiComposer"><div class="aiComposerGrid"><textarea id="aiInput" placeholder="Напиши команду или вопрос…" enterkeyhint="send"></textarea><button id="aiSendBtn" class="aiSend" type="button" aria-label="Отправить">↑</button></div><div class="aiFootNote">ИИ читает только нужные разделы MyBase. Изменения не применяются без подтверждения «Применить всё».</div></footer>
+      <footer class="aiComposer"><div class="aiComposerGrid"><textarea id="aiInput" placeholder="Напиши команду или вопрос…" enterkeyhint="send"></textarea><button id="aiSendBtn" class="aiSend" type="button" aria-label="Отправить">↑</button></div><div class="aiFootNote">ИИ не может удалять данные. Добавления и исправления не применяются без подтверждения «Применить всё».</div></footer>
     </section>
   </div>
 
@@ -5649,7 +5649,7 @@ let feedingCalendarMonth = "";
 let feedingCalendarSelectedDate = "";
 let feedingEntryPrefillDate = "";
 let authMode = "login";
-const APP_VERSION = "MyBase v15.4 AI v2 Safe Data";
+const APP_VERSION = "MyBase v15.5 AI v3 Safe Data";
 const DATA_VERSION = "1.6";
 let pendingFeedingDataMigration = false;
 let diagnosticsLog = [];
@@ -7521,7 +7521,7 @@ function renderSavingsSettings(){
 }
 
 
-// ===== MyBase v15 AI v2 Assistant =====
+// ===== MyBase v15.5 AI v3 Safe Assistant =====
 let aiDraft = null;
 let aiBusy = false;
 let aiCallable = null;
@@ -7603,6 +7603,13 @@ function buildAiContext(message=""){
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Budapest",
     childName: feeding.child?.name || "Марк",
     childBirthDate: feeding.child?.birthDate || MARK_BIRTH_DATE,
+    aiSafetyMode:"no-delete",
+    aiSafetyRules:[
+      "Never return delete actions: deletion is permanently forbidden",
+      "For eaten food, return a feeding create action",
+      "A feeding create action may name a product that is not in the catalog; the client will create it automatically",
+      "Do not create a separate product action when the same new product is already included in a feeding create action"
+    ],
     sections,
     meals: mealOptions(), categories: categories(), reactions: reactions(), statuses: statuses(),
     activeCurrencies: savings.activeCurrencies || [], activeGoal: savings.goal?.name || "Квартира"
@@ -7653,16 +7660,21 @@ async function sendAiMessage(){
     const res=await callable({message,context:buildAiContext(message),history});
     const data=res?.data;
     if(!data || !Array.isArray(data.actions)) throw new Error("Сервер вернул непонятный ответ");
+    const blockedDeletes=data.actions.filter(action=>String(action?.op||"create").toLowerCase()==="delete").length;
+    const safeActions=data.actions.filter(action=>String(action?.op||"create").toLowerCase()!=="delete");
+    const safeWarnings=[...(data.warnings||[])];
+    if(blockedDeletes) safeWarnings.push(`Безопасный режим заблокировал удаление: ${blockedDeletes}. Данные не изменены.`);
     aiConversation.push({role:"user",text:message});
     const answer=(data.answer||"").trim(), summary=(data.summary||"").trim();
-    aiConversation.push({role:"assistant",text:answer||summary||`Подготовлено действий: ${data.actions.length}`});
+    aiConversation.push({role:"assistant",text:answer||summary||`Подготовлено действий: ${safeActions.length}`});
     aiConversation=aiConversation.slice(-10);
-    aiDraft=data.actions.length?{responseType:data.responseType||"actions",summary:summary||"Готово к проверке",actions:data.actions||[],warnings:data.warnings||[]}:null;
+    aiDraft=safeActions.length?{responseType:data.responseType||"actions",summary:summary||"Готово к проверке",actions:safeActions,warnings:safeWarnings}:null;
     aiSetTyping(false);
     if(answer) aiAddBubble(answer,"bot");
     else if(summary) aiAddBubble(summary,"bot");
-    else if(!data.actions.length) aiAddBubble("По этим данным ничего менять не нужно.","bot");
-    if((data.warnings||[]).length && !data.actions.length) aiAddBubble((data.warnings||[]).join("\n"),"error");
+    else if(!safeActions.length && !blockedDeletes) aiAddBubble("По этим данным ничего менять не нужно.","bot");
+    if(blockedDeletes) aiAddBubble(`🛡️ Удаление заблокировано. ИИ не удалил ни одной записи.`,"bot");
+    if(safeWarnings.length && !safeActions.length) aiAddBubble(safeWarnings.join("\n"),"error");
     renderAiPreview();
   }catch(err){
     aiSetTyping(false); logDiag("warn","Ошибка ИИ-помощника",err,"AI"); aiAddBubble(friendlyAiError(err),"error");
@@ -7671,7 +7683,7 @@ async function sendAiMessage(){
     aiBusy=false; if(input) input.disabled=false; if($("#aiSendBtn")) $("#aiSendBtn").disabled=false; input?.focus();
   }
 }
-function aiOpLabel(op){ return op==="delete"?"Удаление":op==="update"?"Изменение":"Добавление"; }
+function aiOpLabel(op){ return op==="delete"?"Удаление заблокировано":op==="update"?"Изменение":"Добавление"; }
 function aiActionPresentation(a){
   const op=a?.op||"create", kind=a?.kind||""; let icon="📝",title="Запись",detail="";
   if(kind==="product"){icon="🥝";title=a.product||"Продукт";detail=[a.category,a.status,a.allergen===true?`аллерген${a.allergenType?`: ${a.allergenType}`:""}`:""].filter(Boolean).join(" • ");}
@@ -7688,15 +7700,15 @@ function renderAiPreview(){
   const host=$("#aiPreviewHost"); if(!host) return;
   if(!aiDraft){ host.innerHTML=aiUndoSnapshot?'<div class="aiSaved">Последнее изменение ИИ сохранено. <button class="btn" id="aiUndoLast" type="button" style="margin-left:6px">Отменить последнее сохранение</button></div>':""; return; }
   const actions=aiDraft.actions||[];
-  host.innerHTML=`<div class="aiPreview"><div class="aiPreviewHead"><div><h3>Проверь перед сохранением</h3><p class="muted small" style="margin:4px 0 0">Будет выполнено действий: ${actions.length}</p></div><span class="badge green">ничего ещё не изменено</span></div><div class="aiActionList">${actions.map((a,i)=>{const v=aiActionPresentation(a); return `<div class="aiAction"><div class="aiActionIcon">${v.icon}</div><div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><h4>${esc(v.title)}</h4><span class="badge ${a.op==="delete"?"red":a.op==="update"?"warn":"green"}">${esc(v.opLabel)}</span></div><p>${esc(v.detail||"Без дополнительных данных")}</p></div><button class="aiRemove" type="button" data-ai-remove="${i}" title="Не выполнять это действие">×</button></div>`}).join("") || '<p class="muted small">Нет действий для сохранения.</p>'}</div>${(aiDraft.warnings||[]).length?`<div class="aiWarnings"><b>Нужно обратить внимание:</b><br>${aiDraft.warnings.map(esc).join("<br>")}</div>`:""}<div class="aiPreviewActions"><button class="btn btnPrimary" id="aiSaveDraft" type="button" ${actions.length?"":"disabled"}>✅ Применить всё</button><button class="btn" id="aiClearDraft" type="button">Не применять</button></div></div>`;
+  host.innerHTML=`<div class="aiPreview"><div class="aiPreviewHead"><div><h3>Проверь перед сохранением</h3><p class="muted small" style="margin:4px 0 0">Будет выполнено действий: ${actions.length}</p></div><span class="badge green">🛡️ удаление запрещено</span></div><div class="aiActionList">${actions.map((a,i)=>{const v=aiActionPresentation(a); return `<div class="aiAction"><div class="aiActionIcon">${v.icon}</div><div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><h4>${esc(v.title)}</h4><span class="badge ${a.op==="update"?"warn":"green"}">${esc(v.opLabel)}</span></div><p>${esc(v.detail||"Без дополнительных данных")}</p></div><button class="aiRemove" type="button" data-ai-remove="${i}" title="Не выполнять это действие">×</button></div>`}).join("") || '<p class="muted small">Нет действий для сохранения.</p>'}</div>${(aiDraft.warnings||[]).length?`<div class="aiWarnings"><b>Нужно обратить внимание:</b><br>${(aiDraft.warnings||[]).map(esc).join("<br>")}</div>`:""}<div class="aiPreviewActions"><button class="btn btnPrimary" id="aiSaveDraft" type="button" ${actions.length?"":"disabled"}>✅ Применить всё</button><button class="btn" id="aiClearDraft" type="button">Не применять</button></div></div>`;
   $("#aiBody")?.scrollTo({top:$("#aiBody").scrollHeight,behavior:"smooth"});
 }
 function removeAiAction(index){ if(!aiDraft?.actions) return; aiDraft.actions.splice(index,1); renderAiPreview(); }
 function aiNormalizeMeal(value){ const q=normalizeSearch(value); if(!q) return "Не указано"; if(q.includes("обед")||q.includes("день")) return "Обед"; if(q.includes("веч")) return "Вечер"; if(q.includes("утр")) return "Утро"; return mealOptions().find(m=>normalizeSearch(m)===q)||String(value||"Не указано"); }
 function aiFindProduct(name,category,id=""){
   if(id){ const byId=(feeding.products||[]).find(p=>String(p.id||"")===String(id)); if(byId) return byId; }
-  const q=normalizeSearch(name); if(!q) return null;
-  return (feeding.products||[]).find(p=>normalizeSearch(p.name)===q && (!category||normalizeSearch(p.category)===normalizeSearch(category))) || (feeding.products||[]).find(p=>normalizeSearch(p.name)===q) || null;
+  const q=menu8ProductKey(name); if(!q) return null;
+  return (feeding.products||[]).find(p=>menu8ProductKey(p.name)===q && (!category||normalizeSearch(p.category)===normalizeSearch(category))) || (feeding.products||[]).find(p=>menu8ProductKey(p.name)===q) || null;
 }
 function aiEnsureProduct(a){
   let p=aiFindProduct(a.product,a.category,a.productId); if(p) return p;
@@ -7705,6 +7717,16 @@ function aiEnsureProduct(a){
   feeding.products.push(p); return p;
 }
 function aiResolvePlanDay(date,requested,map){ if(n(requested)>0) return n(requested); if(map.has(date)) return map.get(date); const existing=entriesForDate(date)[0]?.planDay; const value=n(existing)||nextFeedingPlanDay(); map.set(date,value); return value; }
+function aiNextEntryNumber(){ return Math.max(0,...(feeding.entries||[]).map(entry=>n(entry.number)))+1; }
+function aiFeedingDuplicate(date,meal,product){
+  const productKey=menu8ProductKey(product?.name||product);
+  const mealKey=menu8EntryMealKey(meal);
+  return (feeding.entries||[]).some(entry=>
+    String(entry.date||"").slice(0,10)===String(date||"").slice(0,10) &&
+    menu8EntryMealKey(entry.meal)===mealKey &&
+    menu8ProductKey(entry.product)===productKey
+  );
+}
 function aiFindTooth(name){ const q=normalizeSearch(name); return BABY_TEETH.find(t=>normalizeSearch(t)===q) || BABY_TEETH.find(t=>q && normalizeSearch(t).includes(q)) || null; }
 function aiFindGoal(name,id=""){ if(id){const g=(savings.goals||[]).find(x=>String(x.id)===String(id)); if(g) return g;} const q=normalizeSearch(name); return (savings.goals||[]).find(g=>q&&normalizeSearch(g.name)===q) || (savings.goals||[]).find(g=>g.id===activeGoalId()) || (savings.goals||[])[0]; }
 function aiVal(v){ return v!==null && v!==undefined; }
@@ -7714,15 +7736,16 @@ function aiRecordMissing(kind,id){ return `Не найдена запись ${ki
 
 async function applyAiDraft(){
   if(!aiDraft?.actions?.length || aiBusy) return;
-  const deletes=aiDraft.actions.filter(a=>a.op==="delete").length;
-  if(deletes && !confirmDanger("Подтвердить удаление через ИИ?",`Будет удалено записей: ${deletes}. Перед изменениями сохранён снимок для кнопки «Отменить».`)) return;
+  const draftActions=aiDraft.actions.filter(action=>String(action?.op||"create").toLowerCase()!=="delete");
+  if(!draftActions.length){ toast("Удаление через ИИ запрещено"); return; }
   aiBusy=true; aiUndoSnapshot={feeding:deep(feeding),savings:deep(savings)};
   let feedingChanged=false,savingsChanged=false,saved=0,skipped=[]; const planDays=new Map();
   try{
     normalizeFeedingExtras(); normalizeSavings();
-    for(const a of aiDraft.actions){
+    for(const a of draftActions){
       try{
-        const op=a.op||"create";
+        const op=String(a.op||"create").toLowerCase();
+        if(op==="delete"){ skipped.push("Удаление через ИИ запрещено"); continue; }
         if(a.kind==="product"){
           if(op==="create"){
             if(!a.product){skipped.push("Продукт без названия");continue;}
@@ -7730,7 +7753,6 @@ async function applyAiDraft(){
             aiEnsureProduct(a); feedingChanged=true;saved++;addAudit("ИИ добавил продукт",a.product,"ИИ");continue;
           }
           const p=aiFindProduct(a.product,a.category,a.recordId||a.productId); if(!p){skipped.push(aiRecordMissing("продукта",a.recordId));continue;}
-          if(op==="delete"){moveToTrash("product",p,p.name);feeding.products=feeding.products.filter(x=>x.id!==p.id);feedingChanged=true;saved++;addAudit("ИИ удалил продукт",p.name,"ИИ");continue;}
           const oldName=p.name;
           aiSetIf(p,"name",a.product,v=>String(v).trim());
           if(aiVal(a.category)){const c=categories().find(x=>normalizeSearch(x)===normalizeSearch(a.category)); if(c) p.category=c;}
@@ -7744,40 +7766,42 @@ async function applyAiDraft(){
         if(a.kind==="feeding"){
           if(op==="create"){
             if(!a.product){ skipped.push("Прикорм без названия продукта"); continue; }
-            const date=a.date||today(), p=aiEnsureProduct(a), status=a.status||suggestedEntryStatus(p,date);
-            feeding.entries.push({id:"eai"+Date.now()+Math.random().toString(16).slice(2),date,planDay:aiResolvePlanDay(date,a.planDay,planDays),age:babyAgeLabel(date),meal:aiNormalizeMeal(a.meal),status,category:p.category,product:p.name,productId:p.id,portion:a.portion||"",reaction:a.reaction||"",stool:a.stool||"",skin:a.skin||"",sleepMood:a.sleepMood||"",reactionDescription:a.reactionDescription||"",notes:a.note||"",source:"AI"});
+            const date=a.date||today(), meal=aiNormalizeMeal(a.meal||"Утро");
+            if(aiFeedingDuplicate(date,meal,a.product)){ skipped.push(`${a.product} уже есть во «Ввод» за ${fmtDate(date)} • ${meal}`); continue; }
+            const existingProduct=aiFindProduct(a.product,a.category,a.productId), p=aiEnsureProduct(a);
+            if(!existingProduct) addAudit("ИИ добавил новый продукт",p.name,"ИИ");
+            const status=suggestedEntryStatus(p,date);
+            feeding.entries.push({id:"eai"+Date.now()+Math.random().toString(16).slice(2),number:aiNextEntryNumber(),date,planDay:aiResolvePlanDay(date,a.planDay,planDays),age:babyAgeLabel(date),meal,status,category:p.category,product:p.name,productId:p.id,allergen:!!p.allergen,allergenType:p.allergenType||"",portion:a.portion||"",reaction:a.reaction||"",stool:a.stool||"",skin:a.skin||"",sleepMood:a.sleepMood||"",reactionDescription:a.reactionDescription||"",notes:a.note||"",source:"AI"});
             if(isStatusIntroduced(status)) p.status="Введён"; feedingChanged=true;saved++;addAudit("ИИ добавил прикорм",`${p.name} • ${date}`,"ИИ");continue;
           }
           const e=aiById(feeding.entries,a.recordId); if(!e){skipped.push(aiRecordMissing("прикорма",a.recordId));continue;}
-          if(op==="delete"){moveToTrash("feedingEntry",e,e.product||"Прикорм");feeding.entries=feeding.entries.filter(x=>x.id!==e.id);feedingChanged=true;saved++;addAudit("ИИ удалил прикорм",`${e.product} • ${e.date}`,"ИИ");continue;}
           if(aiVal(a.product)){const p=aiEnsureProduct(a);e.product=p.name;e.productId=p.id;e.category=p.category;}
           aiSetIf(e,"date",a.date); aiSetIf(e,"planDay",a.planDay,v=>n(v)); aiSetIf(e,"meal",a.meal,aiNormalizeMeal); aiSetIf(e,"status",a.status); aiSetIf(e,"category",a.category); aiSetIf(e,"portion",a.portion); aiSetIf(e,"reaction",a.reaction); aiSetIf(e,"stool",a.stool); aiSetIf(e,"skin",a.skin); aiSetIf(e,"sleepMood",a.sleepMood); aiSetIf(e,"reactionDescription",a.reactionDescription); aiSetIf(e,"notes",a.note); e.age=babyAgeLabel(e.date||today());
           feedingChanged=true;saved++;addAudit("ИИ изменил прикорм",`${e.product} • ${e.date}`,"ИИ");continue;
         }
         if(a.kind==="growth"){
           if(op==="create"){if(a.weightKg==null&&a.heightCm==null){skipped.push("Рост/вес без измерения");continue;}feeding.development.growth.push({id:"gai"+Date.now()+Math.random().toString(16).slice(2),date:a.date||today(),weight:a.weightKg==null?"":String(a.weightKg),height:a.heightCm==null?"":String(a.heightCm),note:a.note||"Добавлено через ИИ"});feedingChanged=true;saved++;addAudit("ИИ добавил измерение",a.date||today(),"ИИ");continue;}
-          const g=aiById(feeding.development.growth,a.recordId);if(!g){skipped.push(aiRecordMissing("роста/веса",a.recordId));continue;}if(op==="delete"){moveToTrash("growth",g,fmtDate(g.date));feeding.development.growth=feeding.development.growth.filter(x=>x.id!==g.id);feedingChanged=true;saved++;continue;}aiSetIf(g,"date",a.date);aiSetIf(g,"weight",a.weightKg,v=>String(v));aiSetIf(g,"height",a.heightCm,v=>String(v));aiSetIf(g,"note",a.note);feedingChanged=true;saved++;continue;
+          const g=aiById(feeding.development.growth,a.recordId);if(!g){skipped.push(aiRecordMissing("роста/веса",a.recordId));continue;}aiSetIf(g,"date",a.date);aiSetIf(g,"weight",a.weightKg,v=>String(v));aiSetIf(g,"height",a.heightCm,v=>String(v));aiSetIf(g,"note",a.note);feedingChanged=true;saved++;continue;
         }
         if(a.kind==="tooth"){
           const tooth=aiFindTooth(a.tooth||a.recordId); if(!tooth){skipped.push(`Не удалось точно определить зуб: ${a.tooth||a.recordId||"—"}`);continue;}
-          if(op==="delete"){const old=feeding.development.teeth[tooth];if(!old){skipped.push(`Зуб «${tooth}» ещё не отмечен`);continue;}moveToTrash("tooth",{name:tooth,value:deep(old)},tooth);delete feeding.development.teeth[tooth];feedingChanged=true;saved++;continue;}
           const old=feeding.development.teeth[tooth]||{};feeding.development.teeth[tooth]={date:aiVal(a.date)?a.date:(old.date||today()),note:aiVal(a.note)?(a.note||""):(old.note||"Добавлено через ИИ")};feedingChanged=true;saved++;addAudit(op==="update"?"ИИ изменил зуб":"ИИ отметил зуб",tooth,"ИИ");continue;
         }
         if(a.kind==="family_event"){
           if(op==="create"){const type=["doctor","vaccine","docs","family","reminder","other"].includes(a.eventType)?a.eventType:"other";feeding.familyEvents.push({id:"feai"+Date.now()+Math.random().toString(16).slice(2),date:a.date||today(),time:a.time||"",type,title:a.title||eventTypeLabel(type),note:a.note||""});feedingChanged=true;saved++;continue;}
-          const ev=aiById(feeding.familyEvents,a.recordId);if(!ev){skipped.push(aiRecordMissing("события",a.recordId));continue;}if(op==="delete"){moveToTrash("familyEvent",ev,ev.title||eventTypeLabel(ev.type));feeding.familyEvents=feeding.familyEvents.filter(x=>x.id!==ev.id);feedingChanged=true;saved++;continue;}aiSetIf(ev,"date",a.date);aiSetIf(ev,"time",a.time);if(aiVal(a.eventType)&&["doctor","vaccine","docs","family","reminder","other"].includes(a.eventType))ev.type=a.eventType;aiSetIf(ev,"title",a.title);aiSetIf(ev,"note",a.note);feedingChanged=true;saved++;continue;
+          const ev=aiById(feeding.familyEvents,a.recordId);if(!ev){skipped.push(aiRecordMissing("события",a.recordId));continue;}aiSetIf(ev,"date",a.date);aiSetIf(ev,"time",a.time);if(aiVal(a.eventType)&&["doctor","vaccine","docs","family","reminder","other"].includes(a.eventType))ev.type=a.eventType;aiSetIf(ev,"title",a.title);aiSetIf(ev,"note",a.note);feedingChanged=true;saved++;continue;
         }
         if(a.kind==="illness"){
           if(op==="create"){feeding.development.illnesses.push({id:"illai"+Date.now()+Math.random().toString(16).slice(2),startDate:a.startDate||a.date||today(),endDate:a.endDate||"",temperature:a.temperatureC==null?"":String(a.temperatureC),symptoms:a.symptoms||"",meds:a.meds||"",diagnosis:a.diagnosis||"",notes:a.note||""});feedingChanged=true;saved++;continue;}
-          const x=aiById(feeding.development.illnesses,a.recordId);if(!x){skipped.push(aiRecordMissing("здоровья",a.recordId));continue;}if(op==="delete"){moveToTrash("illness",x,x.symptoms||x.diagnosis||"Запись");feeding.development.illnesses=feeding.development.illnesses.filter(v=>v.id!==x.id);feedingChanged=true;saved++;continue;}aiSetIf(x,"startDate",a.startDate||a.date);aiSetIf(x,"endDate",a.endDate);aiSetIf(x,"temperature",a.temperatureC,v=>String(v));aiSetIf(x,"symptoms",a.symptoms);aiSetIf(x,"meds",a.meds);aiSetIf(x,"diagnosis",a.diagnosis);aiSetIf(x,"notes",a.note);feedingChanged=true;saved++;continue;
+          const x=aiById(feeding.development.illnesses,a.recordId);if(!x){skipped.push(aiRecordMissing("здоровья",a.recordId));continue;}aiSetIf(x,"startDate",a.startDate||a.date);aiSetIf(x,"endDate",a.endDate);aiSetIf(x,"temperature",a.temperatureC,v=>String(v));aiSetIf(x,"symptoms",a.symptoms);aiSetIf(x,"meds",a.meds);aiSetIf(x,"diagnosis",a.diagnosis);aiSetIf(x,"notes",a.note);feedingChanged=true;saved++;continue;
         }
         if(a.kind==="document"){
           if(op==="create"){if(!a.title){skipped.push("Документ без названия");continue;}feeding.documents.push({id:"docai"+Date.now()+Math.random().toString(16).slice(2),type:a.documentType||"Другое",title:a.title,issueDate:a.issueDate||"",expireDate:a.expireDate||"",note:a.note||""});feedingChanged=true;saved++;continue;}
-          const d=aiById(feeding.documents,a.recordId);if(!d){skipped.push(aiRecordMissing("документа",a.recordId));continue;}if(op==="delete"){moveToTrash("document",d,d.title||"Документ");feeding.documents=feeding.documents.filter(x=>x.id!==d.id);feedingChanged=true;saved++;continue;}aiSetIf(d,"type",a.documentType);aiSetIf(d,"title",a.title);aiSetIf(d,"issueDate",a.issueDate);aiSetIf(d,"expireDate",a.expireDate);aiSetIf(d,"note",a.note);feedingChanged=true;saved++;continue;
+          const d=aiById(feeding.documents,a.recordId);if(!d){skipped.push(aiRecordMissing("документа",a.recordId));continue;}aiSetIf(d,"type",a.documentType);aiSetIf(d,"title",a.title);aiSetIf(d,"issueDate",a.issueDate);aiSetIf(d,"expireDate",a.expireDate);aiSetIf(d,"note",a.note);feedingChanged=true;saved++;continue;
         }
         if(a.kind==="savings_transaction"){
           if(op==="create"){const amount=n(a.amount);if(amount<=0){skipped.push("Накопления без суммы");continue;}if(!a.currency){skipped.push("Для накопления не указана валюта");continue;}const cur=String(a.currency).toUpperCase();if(!(savings.activeCurrencies||[]).includes(cur)){skipped.push(`Валюта ${cur} не настроена во вкладке «Валюты»`);continue;}const goal=aiFindGoal(a.goalName);savings.transactions.unshift({id:"tai"+Date.now()+Math.random().toString(16).slice(2),goalId:goal?.id||activeGoalId(),type:a.transactionType==="expense"?"expense":"income",amount,currency:cur,rateAtAdd:currentRate(cur),date:a.date||today(),note:a.note||"Добавлено через ИИ"});savingsChanged=true;saved++;continue;}
-          const t=aiById(savings.transactions,a.recordId);if(!t){skipped.push(aiRecordMissing("накоплений",a.recordId));continue;}if(op==="delete"){moveToTrash("transaction",t,t.note||fmtMoney(t.amount,t.currency));savings.transactions=savings.transactions.filter(x=>x.id!==t.id);feedingChanged=true;savingsChanged=true;saved++;continue;}if(aiVal(a.amount)){const amount=n(a.amount);if(amount<=0){skipped.push("Сумма должна быть больше 0");continue;}t.amount=amount;}if(aiVal(a.currency)){const cur=String(a.currency).toUpperCase();if(!(savings.activeCurrencies||[]).includes(cur)){skipped.push(`Валюта ${cur} не настроена`);continue;}t.currency=cur;t.rateAtAdd=currentRate(cur);}if(aiVal(a.transactionType))t.type=a.transactionType==="expense"?"expense":"income";if(aiVal(a.goalName)){const goal=aiFindGoal(a.goalName);if(goal)t.goalId=goal.id;}aiSetIf(t,"date",a.date);aiSetIf(t,"note",a.note);savingsChanged=true;saved++;continue;
+          const t=aiById(savings.transactions,a.recordId);if(!t){skipped.push(aiRecordMissing("накоплений",a.recordId));continue;}if(aiVal(a.amount)){const amount=n(a.amount);if(amount<=0){skipped.push("Сумма должна быть больше 0");continue;}t.amount=amount;}if(aiVal(a.currency)){const cur=String(a.currency).toUpperCase();if(!(savings.activeCurrencies||[]).includes(cur)){skipped.push(`Валюта ${cur} не настроена`);continue;}t.currency=cur;t.rateAtAdd=currentRate(cur);}if(aiVal(a.transactionType))t.type=a.transactionType==="expense"?"expense":"income";if(aiVal(a.goalName)){const goal=aiFindGoal(a.goalName);if(goal)t.goalId=goal.id;}aiSetIf(t,"date",a.date);aiSetIf(t,"note",a.note);savingsChanged=true;saved++;continue;
         }
       }catch(err){ skipped.push(err?.message||String(err)); logDiag("warn","Не удалось применить действие ИИ",err,"AI.apply"); }
     }
